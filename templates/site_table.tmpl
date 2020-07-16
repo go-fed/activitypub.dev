@@ -1,0 +1,42 @@
+{{define "site"}}
+{{template "common_top"}}
+{{template "body"}}
+<table>
+	<thead><tr>
+		<th>Short Name</th>
+		<th>Title</th>
+		<th>Author</th>
+		<th>Submission Date</th>
+		<th>In Response To</th>
+		<th>Responses</th>
+		<th>Related</th>
+	</tr></thead>
+	<tbody>
+{{range .Data}}
+{{$row := .}}
+<tr>
+	<td><a href="{{.UrlPath}}">{{.ShortName}}</a></td>
+	<td><a href="{{.UrlPath}}">{{.Title}}</a></td>
+	<td><a rel="noreferrer noopener" target="_blank" href="{{.AuthorUrl}}">{{.Author}}</a></td>
+	<td>{{.Date}}</td>
+	<td>
+		{{range $idx, $ele := .ResponseToShortNames}}
+		<a href="{{index $row.ResponseToURLs $idx}}">{{$ele}}</a>
+		{{end}}
+	</td>
+	<td>
+		{{range $idx, $ele := .ResponsesShortNames}}
+		<a href="{{index $row.ResponsesURLs $idx}}">{{$ele}}</a>
+		{{end}}
+	</td>
+	<td>
+		{{range $idx, $ele := .RelatedShortNames}}
+		<a href="{{index $row.RelatedURLs $idx}}">{{$ele}}</a>
+		{{end}}
+	</td>
+</tr>
+{{end}}
+	</tbody>
+</table>
+{{template "common_bottom"}}
+{{end}}

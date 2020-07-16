@@ -1,0 +1,51 @@
+{{define "common_top"}}
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>{{template "title"}}</title>
+	<link rel="icon" href="favicon.ico">
+	<link rel="stylesheet" href="/static/site.css">
+</head>
+<body><div id="container">
+	<header>
+	<nav>
+		<span class="sitename"><a href="/">ActivityPub.dev</a></span>
+		<ul>
+			<li><a href="/about.html">About</a></li>
+			<li><a href="/contributing.html">Contribute</a></li>
+			<li><a href="/problems.html">Problems</a></li>
+			<li><a href="/analyses.html">Analyses</a></li>
+			<li><a href="/experiments.html">Experiments</a></li>
+			<li><a href="/objections.html">Objections</a></li>
+		</ul>
+	</nav>
+	</header>
+	<div><div class="notice">
+		<p>This site is still under heavy construction and community
+		discussion! Join the discussion on the Fediverse with
+		<span class="code">#ActivityPubDev</span> or reach out to
+		<a rel="noreferrer noopener" target="_blank" href="https://mastodon.technology/@cj">
+			@cj@mastodon.technology</a>.</p>
+	</div></div>
+	<div class="footerpusher"><div class="body">
+{{end}}
+{{define "common_bottom"}}
+	</div></div>
+	<footer>
+		<div class="footer">Hand-crafted HTML, no-javascript, static site made with Golang</div>
+		<div class="footer">
+			<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+				<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" />
+			</a>
+			<br />
+			This work is licensed under a
+			<a rel="license noreferrer noopener" target="_blank"
+				href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+			Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+			License</a>.
+		</div>
+	</footer>
+</div></body>
+</html>
+{{end}}

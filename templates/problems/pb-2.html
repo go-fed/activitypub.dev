@@ -1,0 +1,112 @@
+{{define "title"}}ActivityPub Dev - PB-2{{end}}
+{{define "body"}}
+<p>The
+	<a href="https://en.wikipedia.org/wiki/Domain_Name_System">domain name
+		system</a>
+(DNS) is a technology that lets users use a memorable host name, such as
+"activitypub.dev" instead of memorizing specific IP addresses to access content
+over the internet. It forms the backbone of the HTTP protocol and browsing
+habits of users around the world. Being able to type "activitypub.dev" and
+access the machine serving the website is a lot more user-friendly than having
+to memorize an IP address like "127.0.0.1" or "::1".</p>
+<p>DNS is useful, but comes with serious major drawbacks for the Fediverse. They
+range from identity management, being a knowledge barrier for self-hosting,
+being an economic barrier for self-hosting, being a vector for invading internet
+users' privacy, and is a single point of failure as attacks and censorship by
+governments has shown.</p>
+<p>Current Fediverse software ties the user to a specific DNS host, such as
+"mastodon.social" or "pleroma.site". While there are ways to migrate accounts,
+it does not change the fact that Fediverse identity is tied directly to a
+machine somewhere. Currently, moving accounts from one machine to another does
+not obsolete the need for DNS, as the user is exposed no matter which instance
+they reside. This subjects them to further risks involving central points of
+failure, as ex-users of now-defunct instances can attest to: once their instance
+is down, the fountain of their digital presence runs dry and they no longer
+exist. Because identities are tied to DNS, identity management has an upper
+bound of fault-tolerance and distribution limited by DNS's capability.</p>
+<p>Obtaining a DNS name requires technical knowledge of how
+	<a href="https://en.wikipedia.org/wiki/Domain_name_registrar">domain
+		name registries</a>
+function, which adds a knowledge barrier to self-hosting. There are
+plenty of domain-name registrars that cater towards reducing this barrier, but
+this barrier is high for laypeople. It is too easy for the technical community
+to dismiss this concern as trivial simply because of the sheer prevalence of DNS
+in the commercial world. It seems like a foregone conclusion that because of the
+prevalence and popularity of DNS, the technical knowledge barrier must be low.
+However, this was not true in the early 90's and is no truer today. This has
+been a consistent knowledge barrier and pain point that the culture has lived
+with for a long time. As long as the Fediverse is tied to DNS, there is a
+minimum knowledge-bar that exists that grants certain people the power to
+self-host and not others.</p>
+<p>Obtaining a DNS name also requires money in the form of a regular monthly or
+annual payment, which adds an economic barrier to self-hosting. In addition to
+the knowlege-barrier, those above an economic bar can self-host their Fediverse
+identity.</p>
+<p>Note that if a user does not meet either the knowledge or economic bar, they
+can join an existing instance. However, they have then bound their identity to
+that instance. See the previous point on DNS and Fediverse identities: their
+digital identity is, still due in part to DNS, now held hostage.</p>
+<p>DNS requests can be a way for ISPs to re-sell a user's browsing information
+to third parties, depending on local law. In the United States, the Senate
+	<a href="https://www.congress.gov/bill/115th-congress/senate-joint-resolution/34">
+		repealed in S.J.Res.34</a>
+the
+	<a href="https://www.federalregister.gov/documents/2016/12/02/2016-28006/protecting-the-privacy-of-customers-of-broadband-and-other-telecommunications-services">
+		existing FCC guidance protecting DNS records</a>
+for Americans, effectively allowing ISPs to treat DNS records as a means to
+obtain more revenue. This is not to be confused with the same Senate's later
+	<a href="https://www.congress.gov/bill/115th-congress/senate-joint-resolution/52">
+		repeal of net neutrality</a>.
+Across the pond in the UK, 
+	<a href="https://en.wikipedia.org/wiki/Investigatory_Powers_Act_2016">
+		ISPs are required to maintain DNS records</a>
+for up to one year for security and pornography-compliance reasons. Other ISPs
+may even
+	<a href="https://blog.apnic.net/2019/07/17/one-in-four-google-public-dns-requests-are-being-intercepted-in-china-report/">
+		meddle with DNS queries</a>,
+though this very narrow problem does have existing technical solutions. The ISPs
+that do collect DNS logs always pose a risk of
+	<a href="https://rainbowtabl.es/2020/05/25/thai-database-leaks-internet-records/">
+		leaking their country's browsing habits</a>
+which can be used to profile individuals. And this is just one side of the
+privacy side of DNS.</p>
+<p>The other privacy side is when website operators (including this one) must
+disclose personal information for each DNS name they obtain. This allows
+someone to take any website and connect it to specific people or companies. It
+should be no surprise that this database of sensitive personal information is
+already undergoing a crisis under Europe's new GDPR law. It also should be no
+surprise that in
+<a href="http://domainincite.com/23932-surprise-most-private-whois-look-ups-come-from-facebook">
+	2019 Facebook has been attempting to acquire as much of this
+	information as possible</a>, in such an aggressive manner that as recent
+<a href="https://www.theregister.com/2020/06/23/facebook_gdpr_workaround/">
+	as June 2020 domain registrars have publicly complained about this
+	abusive behavior</a> in attempts to gain access to this private
+information.</p>
+<p>Since the Fediverse uses DNS, its users and operators are exposed to both of
+these concerns.</p>
+<p>Governments use DNS to attack groups of individuals or deploy mass
+censorship. DNS can be used to trick users into going to
+	<a href="https://www.wired.com/2014/03/quantum/">
+		malicious websites</a> or
+	<a href="https://tools.ietf.org/html/rfc7626#section-3">
+		passively conduct mass-surveillance</a>.
+Massive
+	<a href="https://krebsonsecurity.com/2019/02/a-deep-dive-on-the-recent-widespread-dns-hijacking-attacks/">
+		DNS Hijacking Campaigns</a>
+are something we live with and are slow to patch holes in. Governments like
+Turkey regularly use DNS blocking in order to enforce mass censorship, for
+example in
+	<a href="https://www.cnet.com/news/google-confirms-turkey-is-blocking-its-dns-service/">
+		2014 by blocking Google's DNS</a>,
+	<a href="https://techcrunch.com/2016/07/15/circumvent-social-media-block/">
+		2016's Social Media Blackout</a>, and
+	<a href="https://protonmail.com/blog/turkey-online-censorship-bypass/">
+		2018's denial of ProtonMail</a>. Just to name a few. As long as
+the Fediverse is tied to DNS, Fediverse software is suspect to this same
+treatment.</p>
+<p>Hopefully this captures the existing tradeoff the Fediverse has made to use
+DNS with problems pertaining to: online identity, higher educational barriers,
+higher economic barriers, increased exposure to privacy risks, and increased
+exposure to being attacked or monitored or censored by world powers.</p>
+{{end}}

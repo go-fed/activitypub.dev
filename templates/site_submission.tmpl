@@ -1,0 +1,29 @@
+{{define "site"}}
+{{template "common_top"}}
+{{range $idx, $ele := $.Data}}
+	{{if eq $ele.UrlPath $.Path}}
+		{{$row := .}}
+		<h1>{{.Title}}</h1>
+		<h2>{{.ShortName}}</h2>
+		<p>By: <a rel="noreferrer noopener" target="_blank" href="{{.AuthorUrl}}">{{.Author}}</a></p>
+		<p>{{.Date}}</p>
+		{{template "body"}}
+		<p>In Response To:
+		{{range $idx, $ref := .ResponseToShortNames}}
+			<a href="{{index $row.ResponseToURLs $idx}}">{{$ref}}</a>
+		{{end}}
+		</p>
+		<p>Responses To This:
+		{{range $idx, $ref := .ResponsesShortNames}}
+			<a href="{{index $row.ResponsesURLs $idx}}">{{$ref}}</a>
+		{{end}}
+		</p>
+		<p>Related:
+		{{range $idx, $ref := .RelatedShortNames}}
+			<a href="{{index $row.RelatedURLs $idx}}">{{$ref}}</a>
+		{{end}}
+		</p>
+	{{end}}
+{{end}}
+{{template "common_bottom"}}
+{{end}}

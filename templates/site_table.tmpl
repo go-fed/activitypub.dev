@@ -1,42 +1,51 @@
 {{define "site"}}
 {{template "common_top"}}
 {{template "body"}}
+{{if gt (len .CategoryFilter) 0}}
+	<div class="chipcontainer">
+		<p class="categories">Filtered by {{if eq (len .CategoryFilter) 1}}Category{{else}}Categories{{end}}:</p>
+		{{range .CategoryFilter}}
+			<a class="chiplink" href="{{RequestURIWithoutQueryCategory .}}"><span class="chip {{.}}">{{.}}</span></a>
+		{{end}}
+	</div>
+{{end}}
+{{if gt (len .TagFilter) 0}}
+	<div class="chipcontainer">
+		<p class="tags">Filtered by {{if eq (len .TagFilter) 1}}Tag{{else}}Tags{{end}}:</p>
+		{{range .TagFilter}}
+			<a class="chiplink" href="{{RequestURIWithoutQueryTag .}}"><span class="chip {{.}}">{{.}}</span></a>
+		{{end}}
+	</div>
+{{end}}
 <table>
 	<thead><tr>
 		<th>Short Name</th>
 		<th>Title</th>
 		<th>Author</th>
 		<th>Submission Date</th>
-		<th>In Response To</th>
-		<th>Responses</th>
-		<th>Related</th>
+		<th>Category</th>
+		<th>Tags</th>
 	</tr></thead>
 	<tbody>
 {{range .Data}}
-{{$row := .}}
 <tr>
-	<td><a href="{{.UrlPath}}">{{.ShortName}}</a></td>
-	<td><a href="{{.UrlPath}}">{{.Title}}</a></td>
-	<td><a rel="noreferrer noopener" target="_blank" href="{{.AuthorUrl}}">{{.Author}}</a></td>
-	<td>{{.Date}}</td>
+	<td><a href="{{.ShortName.URLPath}}">{{.ShortName}}</a></td>
+	<td><a href="{{.ShortName.URLPath}}">{{.Title}}</a></td>
+	<td><a href="{{.Author.ContactURL}}">{{.Author.DisplayName}}</a></td>
+	<td>{{.SubmissionDate}}</td>
 	<td>
-		{{range $idx, $ele := .ResponseToShortNames}}
-		<a href="{{index $row.ResponseToURLs $idx}}">{{$ele}}</a>
+		{{range .Categories}}
+		<a class="chiplink" href="{{RequestURIWithQueryCategory .}}"><span class="chip {{.}}">{{.}}</span></a>
 		{{end}}
 	</td>
 	<td>
-		{{range $idx, $ele := .ResponsesShortNames}}
-		<a href="{{index $row.ResponsesURLs $idx}}">{{$ele}}</a>
-		{{end}}
-	</td>
-	<td>
-		{{range $idx, $ele := .RelatedShortNames}}
-		<a href="{{index $row.RelatedURLs $idx}}">{{$ele}}</a>
+		{{range .Tags}}
+		<a class="chiplink" href="{{RequestURIWithQueryTag .}}"><span class="chip {{.}}">{{.}}</span></a>
 		{{end}}
 	</td>
 </tr>
 {{end}}
 	</tbody>
 </table>
-{{template "common_bottom"}}
+{{template "common_bottom" .SiteLicense}}
 {{end}}

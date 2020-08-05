@@ -23,14 +23,10 @@ const (
 	kSiteSubmissionTemplate = "site_submission.tmpl"
 	kSiteTemplateName       = "site"
 	kDirIndex               = "index.html"
-	kProblemsPage           = "/problems.html"
-	kProblemsPath           = "/problems/"
-	kAnalysesPage           = "/analyses.html"
-	kAnalysesPath           = "/analyses/"
-	kExperimentsPage        = "/experiments.html"
-	kExperimentsPath        = "/experiments/"
-	kObjectionsPage         = "/objections.html"
-	kObjectionsPath         = "/objections/"
+	kShelvesPage            = "/shelves.html"
+	kShelvesPath            = "/shelves/"
+	kCategoryQuery          = "category"
+	kTagQuery               = "tag"
 )
 
 var (
@@ -67,24 +63,9 @@ func main() {
 	p, hf = kRootPath, handleTemplate(kSiteTemplate, nil)
 	http.HandleFunc(p, hf)
 	// Problems
-	p, hf = kProblemsPage, handleTemplate(kSiteTableTemplate, problemData)
+	p, hf = kShelvesPage, handleTemplate(kSiteTableTemplate, allData)
 	http.HandleFunc(p, hf)
-	p, hf = kProblemsPath, handleTemplate(kSiteSubmissionTemplate, problemData)
-	http.HandleFunc(p, hf)
-	// Analyses
-	p, hf = kAnalysesPage, handleTemplate(kSiteTableTemplate, analysisData)
-	http.HandleFunc(p, hf)
-	p, hf = kAnalysesPath, handleTemplate(kSiteSubmissionTemplate, analysisData)
-	http.HandleFunc(p, hf)
-	// Experiments
-	p, hf = kExperimentsPage, handleTemplate(kSiteTableTemplate, experimentData)
-	http.HandleFunc(p, hf)
-	p, hf = kExperimentsPath, handleTemplate(kSiteSubmissionTemplate, experimentData)
-	http.HandleFunc(p, hf)
-	// Objections
-	p, hf = kObjectionsPage, handleTemplate(kSiteTableTemplate, objectionData)
-	http.HandleFunc(p, hf)
-	p, hf = kObjectionsPath, handleTemplate(kSiteSubmissionTemplate, objectionData)
+	p, hf = kShelvesPath, handleTemplate(kSiteSubmissionTemplate, allData)
 	http.HandleFunc(p, hf)
 
 	if *httpsFlag {
@@ -124,7 +105,7 @@ func handleStatic() (string, http.Handler) {
 	return kStaticPath, http.StripPrefix(kStaticPath, fs)
 }
 
-func handleTemplate(siteTemplate string, data interface{}) http.HandlerFunc {
+func handleTemplate(siteTemplate string, data tableData) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		cp := filepath.Join(kTemplatesDir, kCommonTemplate)
 		lp := filepath.Join(kTemplatesDir, siteTemplate)
@@ -150,7 +131,58 @@ func handleTemplate(siteTemplate string, data interface{}) http.HandlerFunc {
 			}
 		}
 
-		tmpl, err := template.ParseFiles(cp, lp, fp)
+		// Process any query filtering
+		query := req.URL.Query()
+		categories, _ := query[kCategoryQuery]
+		tags, _ := query[kTagQuery]
+		u := req.URL
+		addQueryToU := func(k, v string) string {
+			c := *u
+			q := c.Query()
+			q.Add(k, v)
+			c.RawQuery = q.Encode()
+			return (&c).RequestURI()
+		}
+		removeQueryFromU := func(k, v string) string {
+			c := *u
+			q := c.Query()
+			vals, ok := q[k]
+			if ok {
+				di := -1
+				for i := 0; i < len(vals); i++ {
+					if vals[i] == v {
+						di = i
+						break
+					}
+				}
+				if di >= 0 {
+					copy(vals[di:], vals[di+1:])
+					vals[len(vals)-1] = ""
+					vals = vals[:len(vals)-1]
+					q[k] = vals
+				}
+			}
+			c.RawQuery = q.Encode()
+			return (&c).RequestURI()
+		}
+
+		fm := template.FuncMap{
+			"RequestURIWithQueryCategory": func(v category) string {
+				return addQueryToU(kCategoryQuery, string(v))
+			},
+			"RequestURIWithQueryTag": func(t tag) string {
+				return addQueryToU(kTagQuery, string(t))
+			},
+			"RequestURIWithoutQueryCategory": func(v string) string {
+				return removeQueryFromU(kCategoryQuery, v)
+			},
+			"RequestURIWithoutQueryTag": func(t string) string {
+				return removeQueryFromU(kTagQuery, t)
+			},
+		}
+		tmpl := template.New("")
+		tmpl = tmpl.Funcs(fm)
+		tmpl, err = tmpl.ParseFiles(cp, lp, fp)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -158,11 +190,17 @@ func handleTemplate(siteTemplate string, data interface{}) http.HandlerFunc {
 		}
 
 		templateData := struct {
-			Data interface{}
-			Path string
+			Data           tableData
+			Path           string
+			SiteLicense    licenseType
+			CategoryFilter []string
+			TagFilter      []string
 		}{
-			Data: data,
-			Path: req.URL.Path,
+			Data:           data.FilterByCategoriesAndTags(categories, tags),
+			Path:           req.URL.Path,
+			SiteLicense:    kSiteLicense,
+			CategoryFilter: categories,
+			TagFilter:      tags,
 		}
 		err = tmpl.ExecuteTemplate(w, kSiteTemplateName, templateData)
 		if err != nil {

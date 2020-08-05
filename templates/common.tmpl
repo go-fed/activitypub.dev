@@ -3,38 +3,38 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>{{template "title"}}</title>
+	<title>{{template "title" .}}</title>
 	<link rel="icon" href="favicon.ico">
 	<link rel="stylesheet" href="/static/site.css">
+	<link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/rawline" type="text/css">
+	<link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/hack" type="text/css"/>
 </head>
 <body><div id="container">
 	<header>
 	<nav>
-		<span class="sitename"><a href="/">ActivityPub.dev</a></span>
+		<span class="sitename"><a href="/">Library</a></span>
 		<ul>
-			<li><a href="/about.html">About</a></li>
+			<li><a href="/shelves.html">Browse The Shelves</a></li>
 			<li><a href="/contributing.html">Contribute</a></li>
-			<li><a href="/problems.html">Problems</a></li>
-			<li><a href="/analyses.html">Analyses</a></li>
-			<li><a href="/experiments.html">Experiments</a></li>
-			<li><a href="/objections.html">Objections</a></li>
+			<li><a href="/about.html">About</a></li>
 		</ul>
 	</nav>
 	</header>
-	<div><div class="notice">
+	<div class="footerpusher"><div class="body">
+	<div class="notice">
 		<p>This site is still under heavy construction and community
 		discussion! Join the discussion on the Fediverse with
-		<span class="code">#ActivityPubDev</span> or reach out to
-		<a rel="noreferrer noopener" target="_blank" href="https://mastodon.technology/@cj">
+		<span class="code">#FediLibrary</span> or reach out to
+		<a href="https://mastodon.technology/@cj">
 			@cj@mastodon.technology</a>.</p>
-	</div></div>
-	<div class="footerpusher"><div class="body">
+	</div>
 {{end}}
 {{define "common_bottom"}}
 	</div></div>
 	<footer>
-		<div class="footer">Hand-crafted HTML, no-javascript, static site made with Golang</div>
+		<div class="footer">A site with hand-crafted HTML and no javascript, made with Golang</div>
 		<div class="footer">
+{{if eq . "CC BY-NC-SA 4.0"}}
 			<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
 				<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" />
 			</a>
@@ -44,6 +44,36 @@
 				href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
 			Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
 			License</a>.
+{{else if eq . "CC BY-SA 4.0"}}
+			<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+				<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />
+			</a>
+			<br />
+			This work is licensed under a
+			<a rel="license noreferrer noopener" target="_blank"
+				href="http://creativecommons.org/licenses/by-sa/4.0/">
+			Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+{{else if eq . "CC BY 4.0"}}
+			<a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
+				<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" />
+			</a>
+			<br />
+			This work is licensed under a
+			<a rel="license noreferrer noopener" target="_blank"
+				href="http://creativecommons.org/licenses/by/4.0/">
+			Creative Commons Attribution 4.0 International License</a>.
+{{else if eq . "w3c-copyright-software-and-document"}}
+			<a href="https://www.w3.org/Consortium/Legal/2015/doc-license">Copyright</a> 2018
+			<a href="http://www.w3.org/">World Wide Web Consortium</a>,
+			(<a href="http://www.csail.mit.edu/">Massachusetts Institute of Technology</a>,
+			<a href="http://www.ercim.org/">European Research Consortium for Informatics and Mathematics</a>,
+			<a href="http://www.keio.ac.jp/">Keio University</a>,
+			<a href="http://ev.buaa.edu.cn/">Beihang</a>). <a href="http://www.w3.org/Consortium/Legal/2015/doc-license">http://www.w3.org/Consortium/Legal/2015/doc-license</a>
+			<br />
+			This software or document includes material copied from or derived from ActivityPub &lt;<a href="https://www.w3.org/TR/activitypub/">https://www.w3.org/TR/activitypub/</a>&gt;.
+{{else}}
+			<p>Error! Could not determine copyright license.</p>
+{{end}}
 		</div>
 	</footer>
 </div></body>

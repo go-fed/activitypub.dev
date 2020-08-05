@@ -1,29 +1,55 @@
 {{define "site"}}
-{{template "common_top"}}
+{{$row := ""}}
 {{range $idx, $ele := $.Data}}
-	{{if eq $ele.UrlPath $.Path}}
-		{{$row := .}}
-		<h1>{{.Title}}</h1>
-		<h2>{{.ShortName}}</h2>
-		<p>By: <a rel="noreferrer noopener" target="_blank" href="{{.AuthorUrl}}">{{.Author}}</a></p>
-		<p>{{.Date}}</p>
+	{{if eq $ele.ShortName.URLPath $.Path}}
+{{template "common_top" .}}
+		{{$row = .}}
+		<h1 class="title">{{.Title}}</h1>
+		<h2 class="shortname">{{.ShortName}}</h2>
+		{{if gt (len .SourceLink) 0}}
+		<p class="sourcelink">
+			Link to original source:
+			<a href="{{.SourceLink}}">{{.SourceLink}}</a>
+		</p>
+		{{end}}
+		<div class="metadata">
+			<p class="author">By <a href="{{.Author.ContactURL}}">{{.Author.DisplayName}}</a></p>
+			<p class="published">Published on {{.Date}}</p>
+			<p class="submitted">Submitted on {{.SubmissionDate}}</p>
+			<div class="chipcontainer"><p class="categories">Category:</p>
+			{{range .Categories}}
+				<span class="chip {{.}}">{{.}}</span>
+			{{end}}
+			</div>
+			<div class="chipcontainer"><p class="tags">Tags:</p>
+			{{range .Tags}}
+				<span class="chip {{.}}">{{.}}</span>
+			{{end}}
+			</div>
+		</div>
 		{{template "body"}}
-		<p>In Response To:
-		{{range $idx, $ref := .ResponseToShortNames}}
-			<a href="{{index $row.ResponseToURLs $idx}}">{{$ref}}</a>
+		{{if gt (len .ResponseToShortNames) 0}}
+			<p class="related">In Response To:
+			{{range $idx, $ref := .ResponseToShortNames}}
+				<a href="{{(index $row.ResponseToShortNames $idx).URLPath}}">{{$ref}}</a>
+			{{end}}
+			</p>
 		{{end}}
-		</p>
-		<p>Responses To This:
-		{{range $idx, $ref := .ResponsesShortNames}}
-			<a href="{{index $row.ResponsesURLs $idx}}">{{$ref}}</a>
+		{{if gt (len .ResponsesShortNames) 0}}
+			<p class="related">Responses To This:
+			{{range $idx, $ref := .ResponsesShortNames}}
+				<a href="{{(index $row.ResponsesShortNames $idx).URLPath}}">{{$ref}}</a>
+			{{end}}
+			</p>
 		{{end}}
-		</p>
-		<p>Related:
-		{{range $idx, $ref := .RelatedShortNames}}
-			<a href="{{index $row.RelatedURLs $idx}}">{{$ref}}</a>
+		{{if gt (len .RelatedShortNames) 0}}
+			<p class="related">Related:
+			{{range $idx, $ref := .RelatedShortNames}}
+				<a href="{{(index $row.RelatedShortNames $idx).URLPath}}">{{$ref}}</a>
+			{{end}}
+			</p>
 		{{end}}
-		</p>
 	{{end}}
 {{end}}
-{{template "common_bottom"}}
+{{template "common_bottom" $row.License}}
 {{end}}

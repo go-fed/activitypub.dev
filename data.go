@@ -58,6 +58,10 @@ var (
 		DisplayName: "@agateblue@mastodon.technology",
 		ContactURL:  "https://mastodon.technology/@agateblue",
 	}
+	kAuthorGargron = author{
+		DisplayName: "@Gargron@mastodon.social",
+		ContactURL:  "https://mastodon.social/@Gargron",
+	}
 )
 
 // TableData lists submissions.
@@ -115,22 +119,36 @@ func (d data) HasAnyTag(t []string) bool {
 
 var allData = tableData{
 	data{
-		License:              kCCBYSALicense,
-		ShortName:            "COR-2",
-		SourceLink:           "",
-		Title:                "Problems With Relying On The Domain Name Service (DNS)",
-		Author:               kAuthorCJMastodonTechnology,
-		Date:                 "23 June 2020",
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-4",
+		SourceLink:           "https://blog.joinmastodon.org/2018/07/how-to-make-friends-and-verify-requests/",
+		Title:                "How to make friends and verify requests",
+		Author:               kAuthorGargron,
+		Date:                 "3 July 2018",
 		SubmissionDate:       "8 August 2020",
-		Categories:           []category{kProblemCategory},
+		Categories:           []category{kExperimentCategory},
 		Tags:                 []tag{kTechnicalTag},
 		ResponseToShortNames: []shortName{},
 		ResponsesShortNames:  []shortName{},
-		RelatedShortNames:    []shortName{},
+		RelatedShortNames:    []shortName{"WEB-3"},
 	},
 	data{
 		License:              kCCBYNCSALicense,
-		ShortName:            "COR-3",
+		ShortName:            "WEB-3",
+		SourceLink:           "https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/",
+		Title:                "How to implement a basic ActivityPub server",
+		Author:               kAuthorGargron,
+		Date:                 "23 June 2018",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kExperimentCategory},
+		Tags:                 []tag{kTechnicalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{"WEB-4"},
+	},
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-2",
 		SourceLink:           "https://ilu.servus.at/getting-our-hands-dirty.html",
 		Title:                "Getting our hands dirty",
 		Author:               kAuthorAgateBlue,
@@ -143,8 +161,22 @@ var allData = tableData{
 		RelatedShortNames:    []shortName{},
 	},
 	data{
+		License:              kCCBYSALicense,
+		ShortName:            "DS-1",
+		SourceLink:           "",
+		Title:                "Problems With Relying On The Domain Name Service (DNS)",
+		Author:               kAuthorCJMastodonTechnology,
+		Date:                 "23 June 2020",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kProblemCategory},
+		Tags:                 []tag{kTechnicalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
 		License:              kW3C2015CopyrightLicense,
-		ShortName:            "COR-1",
+		ShortName:            "WEB-1",
 		SourceLink:           "https://www.w3.org/TR/activitypub/",
 		Title:                "ActivityPub Authentication & Authorization",
 		Author:               kAuthorW3CActivityPub,

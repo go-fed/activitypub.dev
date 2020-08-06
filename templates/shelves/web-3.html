@@ -1,0 +1,110 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>Today we’ll be looking at how to connect the protocols powering Mastodon in the simplest way possible to enter the federated network. We will use static files, standard command-line tools, and some simple Ruby scripting, although the functionality should be easily adaptable to other programming languages.</p>
+<p>First, what’s the end goal of this exercise? We want to send a Mastodon user a message from our own, non-Mastodon server.</p>
+<p>So what are the ingredients required? The message itself will be formatted with ActivityPub, and it must be attributed to an ActivityPub actor. The actor must be discoverable via Webfinger, and the delivery itself must be cryptographically signed by the actor.</p>
+<h3 id="the-actor">The actor</h3>
+<p>The actor is a publicly accessible JSON-LD document answering the question &ldquo;who&rdquo;. JSON-LD itself is a quite complicated beast, but luckily for our purposes we can treat it as simple JSON with a <code>@context</code> attribute. Here is what an actor document could look like:</p>
+<pre><code>{
+	<span class="codekey">&#34;@context&#34;</span>: [
+		<span class="codevalue">&#34;https://www.w3.org/ns/activitystreams&#34;</span>,
+		<span class="codevalue">&#34;https://w3id.org/security/v1&#34;</span>
+	],
+
+	<span class="codekey">&#34;id&#34;</span>: <span class="codevalue">&#34;https://my-example.com/actor&#34;</span>,
+	<span class="codekey">&#34;type&#34;</span>: <span class="codevalue">&#34;Person&#34;</span>,
+	<span class="codekey">&#34;preferredUsername&#34;</span>: <span class="codevalue">&#34;alice&#34;</span>,
+	<span class="codekey">&#34;inbox&#34;</span>: <span class="codevalue">&#34;https://my-example.com/inbox&#34;</span>,
+
+	<span class="codekey">&#34;publicKey&#34;</span>: {
+		<span class="codekey">&#34;id&#34;</span>: <span class="codevalue">&#34;https://my-example.com/actor#main-key&#34;</span>,
+		<span class="codekey">&#34;owner&#34;</span>: <span class="codevalue">&#34;https://my-example.com/actor&#34;</span>,
+		<span class="codekey">&#34;publicKeyPem&#34;</span>: <span class="codevalue">&#34;-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----&#34;</span>
+	}
+}
+</code></pre>
+<p>The <code>id</code> must be the URL of the document (it’s a self-reference), and all URLs should be using HTTPS. You need to include an <code>inbox</code> even if you don’t plan on receiving messages in response, because for legacy purposes Mastodon doesn’t acknowledge inbox-less actors as compatible.</p>
+<p>The most complicated part of this document is the <code>publicKey</code> as it involves cryptography. The <code>id</code> will in this case refer to the actor itself, with a fragment (the part after <code>#</code>) to identify it&ndash;this is because we are not going to host the key in a separate document (although we could). The <code>owner</code> must be the actor’s <code>id</code>. Now to the hard part: You’ll need to generate an RSA keypair.</p>
+<p>You can do this using OpenSSL:</p>
+<pre><code>openssl genrsa -out private.pem 2048
+openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+</code></pre>
+<p>The contents of the <code>public.pem</code> file is what you would put into the <code>publicKeyPem</code> property. However, JSON does not support verbatim line-breaks in strings, so you would first need to replace line-breaks with <code>\n</code> instead.</p>
+<h3 id="webfinger">Webfinger</h3>
+<p>What is Webfinger? It is what allows us to ask a website, &ldquo;Do you have a user with this username?&rdquo; and receive resource links in response. Implementing this in our case is really simple, since we’re not messing with any databases and can hardcode what we want.</p>
+<p>The Webfinger endpoint is always under <code>/.well-known/webfinger</code>, and it receives queries such as <code>/.well-known/webfinger?resource=acct:bob@my-example.com</code>. Well, in our case we can cheat, and just make it a static file:</p>
+<pre><code>{
+	<span class="codekey">&#34;subject&#34;</span>: <span class="codevalue">&#34;acct:alice@my-example.com&#34;</span>,
+
+	<span class="codekey">&#34;links&#34;</span>: [
+		{
+			<span class="codekey">&#34;rel&#34;</span>: <span class="codevalue">&#34;self&#34;</span>,
+			<span class="codekey">&#34;type&#34;</span>: <span class="codevalue">&#34;application/activity+json&#34;</span>,
+			<span class="codekey">&#34;href&#34;</span>: <span class="codevalue">&#34;https://my-example.com/actor&#34;</span>
+		}
+	]
+}
+</code></pre><p>The <code>subject</code> property here consists of the username (same as <code>preferredUsername</code> earlier) and the domain you’re hosting on. This is how your actor will be stored on other Mastodon servers and how people will be able to mention it in toots. Only one link is required in the Webfinger response, and it’s the link to the actor document.</p>
+<p>After this is uploaded to your webhost and available under your domain with a valid SSL certificate, you could already look up your actor from another Mastodon by entering <code>alice@my-example.com</code> into the search bar. Although it’ll look quite barren.</p>
+<h3 id="the-message">The message</h3>
+<p>ActivityPub messages practically consist of two parts, the message itself (the object) and a wrapper that communicates what’s happening with the message (the activity). In our case, it’s going to be a <code>Create</code> activity. Let’s say &ldquo;Hello world&rdquo; in response to my toot about writing this blog post:</p>
+<iframe src="https://mastodon.social/@Gargron/100254678717223630/embed" class="mastodon-embed" style="max-width: 100%; border: 0" width="400" height="228"></iframe>
+<script src="https://mastodon.social/embed.js" async="async"></script>
+
+<p>Here is how the document could look:</p>
+<pre><code>{
+	<span class="codekey">&#34;@context&#34;</span>: <span class="codevalue">&#34;https://www.w3.org/ns/activitystreams&#34;</span>,
+
+	<span class="codekey">&#34;id&#34;</span>: <span class="codevalue">&#34;https://my-example.com/create-hello-world&#34;</span>,
+	<span class="codekey">&#34;type&#34;</span>: <span class="codevalue">&#34;Create&#34;</span>,
+	<span class="codekey">&#34;actor&#34;</span>: <span class="codevalue">&#34;https://my-example.com/actor&#34;</span>,
+
+	<span class="codekey">&#34;object&#34;</span>: {
+		<span class="codekey">&#34;id&#34;</span>: <span class="codevalue">&#34;https://my-example.com/hello-world&#34;</span>,
+		<span class="codekey">&#34;type&#34;</span>: <span class="codevalue">&#34;Note&#34;</span>,
+		<span class="codekey">&#34;published&#34;</span>: <span class="codevalue">&#34;2018-06-23T17:17:11Z&#34;</span>,
+		<span class="codekey">&#34;attributedTo&#34;</span>: <span class="codevalue">&#34;https://my-example.com/actor&#34;</span>,
+		<span class="codekey">&#34;inReplyTo&#34;</span>: <span class="codevalue">&#34;https://mastodon.social/@Gargron/100254678717223630&#34;</span>,
+		<span class="codekey">&#34;content&#34;</span>: <span class="codevalue">&#34;&lt;p&gt;Hello world&lt;/p&gt;&#34;</span>,
+		<span class="codekey">&#34;to&#34;</span>: <span class="codevalue">&#34;https://www.w3.org/ns/activitystreams#Public&#34;</span>
+	}
+}
+</code></pre>
+<p>With the <code>inReplyTo</code> property we’re chaining our message to a parent. The <code>content</code> property may contain HTML, although of course it will be sanitized by the receiving servers according to their needs — different implementations may find use for a different set of markup. Mastodon will only keep <code>p</code>, <code>br</code>, <code>a</code> and <code>span</code> tags. With the <code>to</code> property we are defining who should be able to view our message, in this case it’s a special value to mean &ldquo;everyone&rdquo;.</p>
+<p>For our purposes, we don’t actually need to host this document publicly, although ideally both the activity and the object would be separately available under their respective <code>id</code>. Let’s just save it under <code>create-hello-world.json</code> because we’ll need it later.</p>
+<p>So the next question is, how do we send this document over, where do we send it, and how will Mastodon be able to trust it?</p>
+<h3 id="http-signatures">HTTP signatures</h3>
+<p>To deliver our message, we will use POST it to the inbox of the person we are replying to (in this case, me). That inbox is <code>https://mastodon.social/inbox</code>. But a simple POST will not do, for how would anyone know it comes from the real @alice@my-example.com and not literally anyone else? For that purpose, we need a HTTP signature. It’s a HTTP header signed by the RSA keypair that we generated earlier, and that’s associated with our actor.</p>
+<p>HTTP signatures is one of those things that are much easier to do with actual code instead of manually. The signature looks like this:</p>
+<pre><code>Signature: keyId=&quot;https://my-example.com/actor#main-key&quot;,headers=&quot;(request-target) host date&quot;,signature=&quot;...&quot;
+</code></pre>
+<p>The <code>keyId</code> refers to public key of our actor, the <code>header</code> lists the headers that are used for building the signature, and then finally, the <code>signature</code> string itself. The order of the headers must be the same in plain-text and within the to-be-signed string, and header names are always lowercase. The <code>(request-target)</code> is a special, fake header that pins down the HTTP method and the path of the destination.</p>
+<p>The to-be-signed string would look something like this:</p>
+<pre><code>(request-target): post /inbox
+host: mastodon.social
+date: Sun, 06 Nov 1994 08:49:37 GMT
+</code></pre>
+<p>Mind that there is only a ±30 seconds time window when that signature would be considered valid, which is a big reason why it’s quite difficult to do manually. Anyway, assuming we’ve got the valid date in there, we now need to build a signed string out of it. Let’s put it all together:</p>
+<pre><code><span class="codekey">require</span> <span class="codevalue">&#39;http&#39;</span>
+<span class="codekey">require</span> <span class="codevalue">&#39;openssl&#39;</span>
+
+document      <span class="codekey">=</span> File<span class="codekey">.</span>read(<span class="codevalue">&#39;create-hello-world.json&#39;</span>)
+date          <span class="codekey">=</span> Time<span class="codekey">.</span>now<span class="codekey">.</span>utc<span class="codekey">.</span>httpdate
+keypair       <span class="codekey">=</span> OpenSSL<span class="codekey">::</span>PKey<span class="codekey">::</span>RSA<span class="codekey">.</span>new(File<span class="codekey">.</span>read(<span class="codevalue">&#39;private.pem&#39;</span>))
+signed_string <span class="codekey">=</span> <span class="codevalue">&#34;(request-target): post /inbox</span><span class="codevalue">\n</span><span class="codevalue">host: mastodon.social</span><span class="codevalue">\n</span><span class="codevalue">date: </span><span class="codevalue">#{</span>date<span class="codevalue">}</span><span class="codevalue">&#34;</span>
+signature     <span class="codekey">=</span> Base64<span class="codekey">.</span>strict_encode64(keypair<span class="codekey">.</span>sign(OpenSSL<span class="codekey">::</span>Digest<span class="codekey">::</span>SHA256<span class="codekey">.</span>new, signed_string))
+header        <span class="codekey">=</span> <span class="codevalue">&#39;keyId=&#34;https://my-example.com/actor&#34;,headers=&#34;(request-target) host date&#34;,signature=&#34;&#39;</span> <span class="codekey">+</span> signature <span class="codekey">+</span> <span class="codevalue">&#39;&#34;&#39;</span>
+
+HTTP<span class="codekey">.</span>headers({ <span class="codevalue">&#39;Host&#39;</span>: <span class="codevalue">&#39;mastodon.social&#39;</span>, <span class="codevalue">&#39;Date&#39;</span>: date, <span class="codevalue">&#39;Signature&#39;</span>: header })
+    <span class="codekey">.</span>post(<span class="codevalue">&#39;https://mastodon.social/inbox&#39;</span>, <span class="codevalue">body</span>: document)
+</code></pre>
+<p>Let’s save it as <code>deliver.rb</code>. I am using the <code>HTTP.rb</code> gem here, so you’ll need to have that installed (<code>gem install http</code>). Finally, run the file with <code>ruby deliver.rb</code>, and your message should appear as a reply on my toot!</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>We have covered how to create a discoverable ActivityPub actor and how to send replies to other people. But there is a lot we haven’t covered: How to follow and be followed (it requires a working inbox), how to have a prettier profile, how to support document forwarding with LD-Signatures, and more. If there is demand, I will write more in-depth tutorials!</p>
+<p>Read more on:</p>
+<ul>
+<li><a href="https://www.w3.org/TR/activitypub/">ActivityPub</a></li>
+<li><a href="https://tools.ietf.org/html/rfc7033">Webfinger</a></li>
+<li><a href="https://tools.ietf.org/html/draft-cavage-http-signatures-10">HTTP Signatures</a></li>
+</ul>
+{{end}}

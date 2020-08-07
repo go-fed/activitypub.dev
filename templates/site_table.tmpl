@@ -20,24 +20,24 @@
 <table>
 	<thead><tr>
 		<th>Short Name</th>
-		<th>Title</th>
+		<th>Title &amp; Category</th>
 		<th>Author</th>
 		<th>Submission Date</th>
-		<th>Category</th>
 		<th>Tags</th>
 	</tr></thead>
 	<tbody>
 {{range .Data}}
 <tr>
 	<td><a href="{{.ShortName.URLPath}}">{{.ShortName}}</a></td>
-	<td><a href="{{.ShortName.URLPath}}">{{.Title}}</a></td>
-	<td><a href="{{.Author.ContactURL}}">{{.Author.DisplayName}}</a></td>
-	<td>{{.SubmissionDate}}</td>
 	<td>
+		<a href="{{.ShortName.URLPath}}">{{.Title}}</a>
+		<br>
 		{{range .Categories}}
 		<a class="chiplink" href="{{RequestURIWithQueryCategory .}}"><span class="chip {{.}}">{{.}}</span></a>
 		{{end}}
 	</td>
+	<td><a href="{{.Author.ContactURL}}">{{.Author.DisplayName}}</a></td>
+	<td>{{.SubmissionDate}}</td>
 	<td>
 		{{range .Tags}}
 		<a class="chiplink" href="{{RequestURIWithQueryTag .}}"><span class="chip {{.}}">{{.}}</span></a>

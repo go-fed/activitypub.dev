@@ -1,0 +1,175 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>Datashards currently uses Canonical S-Expressions as a data format and after
+using it for a few months, I have some thoughts.</p>
+
+<p>First things first: If you aren&#39;t familiar with the format, let me give
+you a quick rundown. Canonical S-Expressions are a bit like regular
+S-Expressions, with a twist. If you already know Lisp, none of this will be new,
+but for the rest of you, there are two items in an S-Expression-  a list and an
+atom. A list is what it sounds like- a sequence of things.  And an atom is a
+thing. An S-Expressions looks like:</p>
+
+<p><code>(item1 item2 item3 item4)</code></p>
+
+<p>If you&#39;re familiar with Python or Javascript, you can think of that as 
+the same as:</p>
+
+<p><code>[item1, item2, item3, item4]</code></p>
+
+<p>In Canonical S-Expressions (csexp), every atom is actually a byte object, and
+we say the size of the byte object by prepending it with the  number of bytes,
+followed by a colon:</p>
+
+<p><code>(5:hello5:world)</code></p>
+
+<p>That&#39;s a list of two items, &#39;hello&#39; and &#39;world&#39;. I&#39;m
+putting these in  quotes but the values aren&#39;t strings, they&#39;re bytes.
+That means it&#39;s  very efficient to put raw binary data in a csexp. If you
+put binary data  in JSON, you&#39;d have to do something like base64 encode it.
+No need in  csexp!</p>
+
+<p>You can also give a “type hint” in csexp, so if you have a binary object
+that represents an image, you can stick the mimetype in the csexp, such as:</p>
+
+<p><code>([image/jpeg]1024:&lt;bytes&gt;)</code></p>
+
+<p>You can also store other lists inside of a csexp, such as:</p>
+
+<p><code>(9:groceries(4:milk5:bread))</code></p>
+
+<h3 id="what-i-like">What I Like</h3>
+
+<p>There&#39;s a lot to like about Canonical S-Expressions. They&#39;re
+extremely space efficient, very flexible and super easy to parse. Writing a
+reader for a csexp is fairly trivial. And even if your language doesn&#39;t
+already have a csexp library, you can easily write one in a day, if not an
+afternoon.</p>
+
+<p>The other thing I like about Canonical S-Expressions is that they do what
+they claim to do and nothing else. They&#39;re a binary format that only does
+byte strings and lists.</p>
+
+<h3 id="what-s-not-to-like-about-canonical-s-expressions">What&#39;s Not to
+	Like About Canonical S-Expressions</h3>
+
+<p>Working with CSEXP data can be a pain. You&#39;re always stuck writing a
+reader for your data. Your reader will take the resulting abstract parsed
+data and convert it into something your application will actually consume. In
+some cases this conversion is easy, <code>3:100</code> becomes the integer 10.
+If you want to store more complex data structures, such as associative array,
+however, then you&#39;ll need to think about it.</p>
+
+<p>Since CSEXP doesn&#39;t have associative arrays, only lists, you&#39;ll
+end up writing the serialization/deserialization format on your own. You
+could store them as lists of lists, <code>((key val) (key val))</code> or the
+more compact form of <code>(key val key val)</code> or you could (ab)use the
+hint system,  such as <code>([key]value [key]value)</code>. Whatever choice
+you make, it will be specific to your application and someone who reads the
+document will need to think about the choices you made beforehand. Or if
+you&#39;re inheriting data in this format, you may end up having to guess at
+the meaning of the data structure.</p>
+
+<p>This type of step is necessary for many serialization formats. In some,
+like Protobufs, it&#39;s a requirement. In XML, it was not strictly necessary
+but almost always done, and in some applications using JSON, it may not be
+necessary at all.</p>
+
+<p>Canonical S-Expressions occupy a strange middle ground where having a
+formal schema is not strictly necessary, as it&#39;s schema-less, but
+it&#39;s also challenging to work without one.</p>
+
+<h3 id="flexible-schema-less-data-serialization-formats">Flexible
+	(Schema-less) Data Serialization Formats</h3>
+
+<p>Flexible data formats are a topic of deep discussion and debate. In the 90
+, it seemed that the world had converged on XML as the One Format to Rule
+Them All. The problem with XML is that even though the format is self
+documenting in some ways, ie <code>&lt;tag&gt;&lt;/tag&gt;</code>, the value
+inside tags needed to be converted during a secondary reader, separate from
+the parser.</p>
+
+<p>Since this distinction isn&#39;t always clear, the parser parses the raw
+data into a machine readable data structure, while a reader parses the data 
+usually post-parsed) into application specific data structures.</p>
+
+<p>Canonical S-Expressions have the same problem in regards to needing a
+reader that XML does, but unlike XML, you don&#39;t have the storage or
+bandwidth issues of the tags.</p>
+
+<p>JSON seems to have won out the generic data format wars by offering some
+types, making writing a reader trivial (or in some cases, unnecessary) but
+anyone who has ever had to work with JSON knows that its thin layer of types
+is misleading. As an example, “How do you store a date in Javascript?”</p>
+
+<p>You could store it as Unix time, seconds after the epoch, or you could
+store it in an ISO 8601 formatted string, ie
+<code>&#34;2008-09-15T15:53:00+05:00&#34;</code> or an RFC 822 date format,
+or something else entirely. Your parser will happily give you a string, but
+you&#39;re stuck needing a reader to do that final conversion, just like you
+did with XML.</p>
+
+<p>JSON-LD solves some of this by giving your values semantic meaning, but
+it makes the parser more complex.</p>
+
+<p>And neither XML nor JSON handle binary data well. To store binary data in
+either format, you must first convert it to Base64, which introduces an
+enormous amount of storage and transmission overhead.</p>
+
+<p>Canonical S-Expressions offers none of the overhead of XML and doesn&#39;t
+claim to do type conversions. Since you&#39;ll need a reader anyway, you can
+do your type conversions in that step.</p>
+
+<h3 id="further-thoughts-and-alternatives">Further Thoughts and
+	Alternatives</h3>
+
+<p>In practice, having some type data assistance does offer benefits. It
+makes your reader simpler, and it makes the format more pleasant to work with,
+and so while I appreciate cxesp&#39;s simplicity, I find working with it to
+be more challenging than it should be.</p>
+
+<p>One thought that I keep having while I&#39;m using csexp is to use the
+type hints to store information such as the data type. Imagine if instead
+of:</p>
+
+<p><code>20:2019-10-02T07:11:07Z</code></p>
+
+<p>We instead stored:</p>
+
+<p><code>[iso8601]20:2019-10-02T07:11:07Z</code></p>
+
+<p>That would give us the data type and we could let the reader take some of
+the work off of our programming logic. This is similar to JSON-LD&#39;s
+method of storing semantic data.</p>
+
+<p>I personally like this idea, but it requires changes to the readers to
+recognize a new “Semantic Canonical S-Expression”.</p>
+
+<p>A simpler idea would be to store some type information alongside the data,
+so instead of 3:253, you might store I3:253, with “I”  indicating that the
+value is an integer. This is exactly what the Bencoding format does.
+Bencoding offers many of the same benefits of CSEXP, but because it also
+supports types, is a bit easier to work with.  The downside, as always, is
+that this helpfulness comes at the cost of storage and bandwidth.</p>
+
+<p>Other formats exist as well. I previously mentioned Bencoding, but there
+is also MessagePack, ASN.1, CBOR, and the newest, Preserves. Each of these
+has a different approach, though they center around the same problem- making
+it easy to store arbitrary data, especially binary data, on disk and on the
+network.</p>
+
+<p>It&#39;s beyond the scope of this post to delve into each of them. I think
+Preserves is the most interesting of the formats. It&#39;s certainly the most
+expressive despite being compact, but since I haven&#39;t used it I don&#39;t
+know if that expressiveness will be something I need or if I could simply use
+Bencoding or MessagePack to the same effect.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>Canonical S-Expressions are a great, flexible, compact data format. It&#39;s
+very fast and efficient. If you have straightforward needs, it&#39;s
+certainly worth checking out. In my use case, Datashards, it fits our current
+needs. If we end up wanting to store more complex data structures in the
+format, such as associative arrays, that will be the time to re-evaluate the
+format choice to see if something else would be a better fit.</p>
+{{end}}

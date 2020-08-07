@@ -32,6 +32,7 @@ type tag string
 const (
 	kTechnicalTag = "technical"
 	kCulturalTag  = "cultural"
+	kDatashardsTag = "datashards"
 )
 
 type shortName string
@@ -61,6 +62,14 @@ var (
 	kAuthorGargron = author{
 		DisplayName: "@Gargron@mastodon.social",
 		ContactURL:  "https://mastodon.social/@Gargron",
+	}
+	kAuthorHypolite = author{
+		DisplayName: "@hypolite@friendica.mrpetovan.com",
+		ContactURL:  "https://friendica.mrpetovan.com/profile/hypolite",
+	}
+	kAuthorEmacsen = author{
+		DisplayName: "@emacsen@emacsen.net",
+		ContactURL:  "https://emacsen.net/@emacsen",
 	}
 )
 
@@ -118,6 +127,62 @@ func (d data) HasAnyTag(t []string) bool {
 }
 
 var allData = tableData{
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-8",
+		SourceLink:           "https://write.emacsen.net/datashards-update-october-2019",
+		Title:                "Datashards Update October 2019",
+		Author:               kAuthorEmacsen,
+		Date:                 "19 October 2019",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kExperimentCategory},
+		Tags:                 []tag{kTechnicalTag, kDatashardsTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-7",
+		SourceLink:           "https://write.emacsen.net/thoughts-on-canonical-s-expressions",
+		Title:                "Thoughts on Canonical S-Expressions",
+		Author:               kAuthorEmacsen,
+		Date:                 "2 October 2019",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kExperimentCategory},
+		Tags:                 []tag{kTechnicalTag, kDatashardsTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-6",
+		SourceLink:           "https://write.emacsen.net/on-long-form-blogging",
+		Title:                "On Long-Form Blogging",
+		Author:               kAuthorEmacsen,
+		Date:                 "23 September 2019",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kCulturalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-5",
+		SourceLink:           "https://blog.mrpetovan.com/uncategorized/what-makes-the-fediverse-better-than-twitter/",
+		Title:                "What makes the Fediverse better than Twitter",
+		Author:               kAuthorHypolite,
+		Date:                 "18 May 2020",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kCulturalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
 	data{
 		License:              kCCBYNCSALicense,
 		ShortName:            "WEB-4",

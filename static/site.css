@@ -208,6 +208,8 @@ thead th:nth-child(6), head th:nth-child(7) {
 
 .chiplink, .chiplink:visited {
 	color: black;
+	display: block;
+	margin: 0.5em 0;
 }
 
 .technical {
@@ -220,7 +222,21 @@ thead th:nth-child(6), head th:nth-child(7) {
 	border-color: #004421;
 }
 
+.datashards {
+	background: #9ed0ff;
+	border-color: #007cf0;
+}
+
 .Problem, .Analysis, .Experimentation, .Objection {
 	background: #ff9ed0;
 	border-color: #f1007e;
+}
+
+blockquote {
+	border-left: 2px solid #f1007e;
+	padding: 0.5em;
+}
+
+cite:before {
+	content: "\2014\00a0";
 }

@@ -28,6 +28,11 @@
 			</div>
 		</div>
 		{{template "body"}}
+		<hr>
+		<p><a href="/shelves.html">Return To The Shelves</a></p>
+		{{if or (or (gt (len .ResponseToShortNames) 0) (gt (len .ResponsesShortNames) 0)) (gt (len .RelatedShortNames) 0)}}
+		<div class="metadata">
+		{{end}}
 		{{if gt (len .ResponseToShortNames) 0}}
 			<p class="related">In Response To:
 			{{range $idx, $ref := .ResponseToShortNames}}
@@ -43,11 +48,14 @@
 			</p>
 		{{end}}
 		{{if gt (len .RelatedShortNames) 0}}
-			<p class="related">Related:
+			<p class="related">Related Works:
 			{{range $idx, $ref := .RelatedShortNames}}
 				<a href="{{(index $row.RelatedShortNames $idx).URLPath}}">{{$ref}}</a>
 			{{end}}
 			</p>
+		{{end}}
+		{{if or (or (gt (len .ResponseToShortNames) 0) (gt (len .ResponsesShortNames) 0)) (gt (len .RelatedShortNames) 0)}}
+		</div>
 		{{end}}
 	{{end}}
 {{end}}

@@ -30,9 +30,14 @@ const (
 type tag string
 
 const (
-	kTechnicalTag = "technical"
-	kCulturalTag  = "cultural"
-	kDatashardsTag = "datashards"
+	kTechnicalTag   = "technical"
+	kCulturalTag    = "cultural"
+	kDatashardsTag  = "datashards"
+	kHeyFYITag      = "hey-fyi"
+	kC2STag         = "c2s"
+	kGovernanceTag  = "governance"
+	kCooperationTag = "cooperation"
+	kBehaviorsTag   = "behaviors"
 )
 
 type shortName string
@@ -71,6 +76,18 @@ var (
 		DisplayName: "@emacsen@emacsen.net",
 		ContactURL:  "https://emacsen.net/@emacsen",
 	}
+	kAuthorCwebber = author{
+		DisplayName: "@cwebber@octodon.social",
+		ContactURL:  "https://octodon.social/@cwebber",
+	}
+	kAuthorMariusor = author{
+		DisplayName: "@mariusor@metalhead.club",
+		ContactURL:  "https://metalhead.club/@mariusor",
+	}
+	kAuthorLain = author{
+		DisplayName: "@lain@lain.com",
+		ContactURL:  "https://lain.com/users/lain",
+	}
 )
 
 // TableData lists submissions.
@@ -82,7 +99,7 @@ func (td tableData) FilterByCategoriesAndTags(c, t []string) tableData {
 	}
 	var out []data
 	for _, d := range td {
-		if d.HasAnyCategory(c) || d.HasAnyTag(t) {
+		if d.HasAllCategories(c) && d.HasAllTags(t) {
 			out = append(out, d)
 		}
 	}
@@ -104,29 +121,191 @@ type data struct {
 	RelatedShortNames    []shortName
 }
 
-func (d data) HasAnyCategory(c []string) bool {
-	for _, cat := range d.Categories {
-		for _, oc := range c {
+func (d data) HasAllCategories(c []string) bool {
+	all := true
+	for _, oc := range c {
+		found := false
+		for _, cat := range d.Categories {
 			if string(cat) == oc {
-				return true
+				found = true
+				break
 			}
 		}
+		all = all && found
 	}
-	return false
+	return all
 }
 
-func (d data) HasAnyTag(t []string) bool {
-	for _, tag := range d.Tags {
-		for _, ot := range t {
+func (d data) HasAllTags(t []string) bool {
+	all := true
+	for _, ot := range t {
+		found := false
+		for _, tag := range d.Tags {
 			if string(tag) == ot {
-				return true
+				found = true
+				break
 			}
 		}
+		all = all && found
 	}
-	return false
+	return all
 }
 
 var allData = tableData{
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-18",
+		SourceLink:           "https://blog.soykaf.com/post/encryption/",
+		Title:                "Lain Thought on End-To-End Encryption with AP Characteristics for a New Era",
+		Author:               kAuthorLain,
+		Date:                 "28 May 2020",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kExperimentCategory},
+		Tags:                 []tag{kTechnicalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-17",
+		SourceLink:           "https://blog.soykaf.com/post/privacy-and-tracking-on-the-fediverse/",
+		Title:                "Privacy and Tracking on the Fediverse",
+		Author:               kAuthorLain,
+		Date:                 "25 March 2018",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kCulturalTag, kBehaviorsTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-16",
+		SourceLink:           "https://blog.soykaf.com/post/activity-pub-in-pleroma/",
+		Title:                "ActivityPub in Pleroma",
+		Author:               kAuthorLain,
+		Date:                 "4 March 2018",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kExperimentCategory},
+		Tags:                 []tag{kTechnicalTag, kHeyFYITag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "WEB-15",
+		SourceLink:           "https://blog.soykaf.com/post/pleroma-encyclical-activity-pub/",
+		Title:                "Pleroma Encyclical: ActivityPub",
+		Author:               kAuthorLain,
+		Date:                 "10 February 2018",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kProblemCategory},
+		Tags:                 []tag{kTechnicalTag, kCooperationTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYNCSALicense,
+		ShortName:            "GHUB-1",
+		SourceLink:           "https://github.com/go-ap/fedbox/blob/master/doc/c2s.md",
+		Title:                "Fed::BOX as an ActivityPub server supporting C2S interactions",
+		Author:               kAuthorMariusor,
+		Date:                 "20 June 2020",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kExperimentCategory},
+		Tags:                 []tag{kTechnicalTag, kC2STag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-14",
+		SourceLink:           "http://dustycloud.org/blog/content-addressed-vocabulary/",
+		Title:                "Content Addressed Vocabulary",
+		Author:               kAuthorCwebber,
+		Date:                 "26 February 2020",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kTechnicalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-13",
+		SourceLink:           "http://dustycloud.org/blog/state-of-spritely-2020-02/",
+		Title:                "State of Spritely for February 2020",
+		Author:               kAuthorCwebber,
+		Date:                 "10 February 2020",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kTechnicalTag, kDatashardsTag, kHeyFYITag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-12",
+		SourceLink:           "http://dustycloud.org/blog/2019-10-01-updates/",
+		Title:                "Updates: ActivityPub Conference, and more",
+		Author:               kAuthorCwebber,
+		Date:                 "1 October 2019",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kCulturalTag, kDatashardsTag, kHeyFYITag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-11",
+		SourceLink:           "http://dustycloud.org/blog/on-standards-divisions-collaboration/",
+		Title:                "On standards divisions and collaboration (or: Why can't the decentralized social web people just get along?)",
+		Author:               kAuthorCwebber,
+		Date:                 "25 January 2018",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kCulturalTag, kCooperationTag},
+		ResponseToShortNames: []shortName{"WEB-10"},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-10",
+		SourceLink:           "http://dustycloud.org/blog/activitypub-is-a-w3c-recommendation/",
+		Title:                "ActivityPub is a W3C Recommendation",
+		Author:               kAuthorCwebber,
+		Date:                 "23 January 2018",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kTechnicalTag, kHeyFYITag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{"WEB-11"},
+		RelatedShortNames:    []shortName{"WEB-9"},
+	},
+	data{
+		License:              kCCBYSALicense,
+		ShortName:            "WEB-9",
+		SourceLink:           "http://dustycloud.org/blog/an-even-more-distributed-activitypub/",
+		Title:                "An even more distributed ActivityPub",
+		Author:               kAuthorCwebber,
+		Date:                 "6 October 2016",
+		SubmissionDate:       "8 August 2020",
+		Categories:           []category{kAnalysisCategory},
+		Tags:                 []tag{kTechnicalTag},
+		ResponseToShortNames: []shortName{},
+		ResponsesShortNames:  []shortName{},
+		RelatedShortNames:    []shortName{"WEB-10"},
+	},
 	data{
 		License:              kCCBYSALicense,
 		ShortName:            "WEB-8",
@@ -136,7 +315,7 @@ var allData = tableData{
 		Date:                 "19 October 2019",
 		SubmissionDate:       "8 August 2020",
 		Categories:           []category{kExperimentCategory},
-		Tags:                 []tag{kTechnicalTag, kDatashardsTag},
+		Tags:                 []tag{kTechnicalTag, kDatashardsTag, kHeyFYITag},
 		ResponseToShortNames: []shortName{},
 		ResponsesShortNames:  []shortName{},
 		RelatedShortNames:    []shortName{},
@@ -149,7 +328,7 @@ var allData = tableData{
 		Author:               kAuthorEmacsen,
 		Date:                 "2 October 2019",
 		SubmissionDate:       "8 August 2020",
-		Categories:           []category{kExperimentCategory},
+		Categories:           []category{kAnalysisCategory},
 		Tags:                 []tag{kTechnicalTag, kDatashardsTag},
 		ResponseToShortNames: []shortName{},
 		ResponsesShortNames:  []shortName{},
@@ -164,7 +343,7 @@ var allData = tableData{
 		Date:                 "23 September 2019",
 		SubmissionDate:       "8 August 2020",
 		Categories:           []category{kAnalysisCategory},
-		Tags:                 []tag{kCulturalTag},
+		Tags:                 []tag{kCulturalTag, kBehaviorsTag},
 		ResponseToShortNames: []shortName{},
 		ResponsesShortNames:  []shortName{},
 		RelatedShortNames:    []shortName{},
@@ -178,7 +357,7 @@ var allData = tableData{
 		Date:                 "18 May 2020",
 		SubmissionDate:       "8 August 2020",
 		Categories:           []category{kAnalysisCategory},
-		Tags:                 []tag{kCulturalTag},
+		Tags:                 []tag{kCulturalTag, kBehaviorsTag},
 		ResponseToShortNames: []shortName{},
 		ResponsesShortNames:  []shortName{},
 		RelatedShortNames:    []shortName{},
@@ -220,7 +399,7 @@ var allData = tableData{
 		Date:                 "Unknown",
 		SubmissionDate:       "8 August 2020",
 		Categories:           []category{kAnalysisCategory},
-		Tags:                 []tag{kCulturalTag},
+		Tags:                 []tag{kCulturalTag, kGovernanceTag, kCooperationTag},
 		ResponseToShortNames: []shortName{},
 		ResponsesShortNames:  []shortName{},
 		RelatedShortNames:    []shortName{},

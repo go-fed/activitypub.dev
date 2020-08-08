@@ -1,0 +1,120 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p><em>NOTE:</em> This update <a href="https://www.patreon.com/posts/30405488">
+	also appeared</a>
+on <a href="https://www.patreon.com/cwebber">my Patreon account</a>.  If you
+re reading the below and it sounds like I'm doing a lot of useful work,
+<a href="https://www.patreon.com/cwebber">consider becoming a patron</a>!</p>
+<p>Hello all!
+It's been a couple of months since I've gotten out an update; much has
+happened.</p>
+<p>First of all, ActivityPub Conf happened and was a big success!  The video
+team got things recorded an uploaded so you can
+<a href="https://conf.tube/video-channels/apconf_channel/videos">
+	watch talks from the event</a>,
+including
+<a href="https://conf.tube/videos/watch/2b9a985b-ccdd-49ce-a81b-ed00d2b47c85">
+	my keynote</a> (the audio quality is a bit messed up on this one, the
+others are better) and
+<a href="https://conf.tube/videos/watch/7a772faf-9a32-4692-b5cd-4dbabfdd9797">
+	Mark Miller's keynote</a>.  The other talks were all also very
+excellent; I'm not going to iterate them all here because
+<a href="https://conf.tube/video-channels/apconf_channel/videos">
+	you can already go watch them</a>!  I think you will find there are
+many thematic threads between the videos.</p>
+<p>We had about 40 people at the event; the first day was spent on talks and
+the second day was an &quot;unconference&quot; where groups self-organized to
+discuss various topics of mutual interest.  One common thread was about the
+kinds of directions I've been pushing for in Spritely: distributed encrypted
+storage (Datashards, with Serge Wroclawski leading the conversation on that),
+object capabilities (OcapPub), stamps, etc.  It was interesting to watch from
+the start to the end of the unconference day; particularly, the Pleroma folks
+were there and gave a lot of feedback.  Towards the start of the day I think
+there was much more skepticism, but towards the end we were hearing belief
+and interest that these kinds of things could and should be implemented and
+would be of real use to fediverse participants.  Lain of Pleroma in
+particular expressed that it helped to realize that even though I'm
+presenting all these ideas, they don't need to be implemented all at once; we
+can take them on piecemeal, and incrementalism is a perfectly valid approach.
+(Also &quot;OcapPub&quot; sounds like a new protocol, whereas it's really
+just a way-to-use ActivityPub mostly as it already exists.  Maybe time for a
+new name for that?)</p>
+<p>Anyway, ActivityPub Conf was a massive success; thank you everyone who
+came and participated.  It's clear after APConf to me just how much of a
+difference getting folks together can make.  For those who couldn't make it,
+let's thank the video team (DeeAnn Little, Sebastian Lasse, Markus Feilner)
+for getting those videos up!</p>
+<p>On the topic of Datashards, we have <a href="https://datashards.net/">
+	a website</a> and a nice logo now (courtesy of mray, who also made
+the ActivityPub logo). Serge Wroclawski (co-host with myself of Libre Lounge)
+has been increasingly helping with the project; before ActivityPub Conference
+and Rebooting Web of Trust we worked to make sure both of our implementations
+could talk to each other (Serge's Python implementation and my Racket
+implementation).  At RWoT we showed a demo where I &quot;beamed&quot; the
+death star plans to Serge's computer.  (We used the same content storage
+server, I uploaded the death star plans, rendered the QR code on my laptop,
+Serge scanned the QR code from his laptop, downloaded the file and showed off
+the plans from his computer... with the storage server having no idea about
+the contents of the data we were storing there!)  People really liked that
+demo; we have had conversations about whether Datashards may serve as a
+foundational system for some other tools being made in that space; more later.
+In the meanwhile, I'm happy we have two applications in two different
+languages successfully being able to read and write each others' immutable
+datashards updates; the next step is making sure that mutability works the
+same.</p>
+<p>Rebooting Web of Trust was also a very interesting event; the highlight
+being that I am now collaborating with some great folks on a
+<a href="https://github.com/cwebber/rwot9-prague/blob/secure-uis/draft-documents/secure-user-interfaces.md">
+	secure user interfaces</a> paper.  We are taking the existing
+Mastodon web user interface and retooling it to reduce risks such as phishing,
+and open the path for more peer to peer systems (very timely, since that's
+the direction we want to take things).  Unfortunately the amount of work to
+do on the paper is rather huge; it may take a while until the paper is
+complete.  In the meanwhile, the
+<a href="https://github.com/cwebber/rebooting-the-web-of-trust-spring2018/blob/petnames/draft-documents/making-dids-invisible-with-petnames.md">
+	Petnames paper</a> has turned out to be a pre-requisite for the
+secure UIs one; that paper has been nearly complete for some time so I guess
+I have to finish the work.  I recently added some new UI mockups to it, but
+there is still more to do.</p>
+<p>Now that these conferences are over, I am putting time towards Spritely's
+core vision again: distributed virtual worlds.  The foundational layer for
+that is <a href="https://gitlab.com/spritely/goblins">Spritely Goblins</a>,
+an ocap-secure distributed programming environment on top of Racket.  I really
+enjoy hacking on this and I am happy to get time back to working on it.  A
+topic of discussion came up between myself and Mark Miller at Rebooting Web
+of Trust though; am I unnecessarily duplicating effort between myself and the
+<a href="https://agoric.com/">Agoric</a> folks?  In particular, they are
+building something equivalent (and arguably more featureful) to Spritely
+Goblins named <a href="https://github.com/Agoric/SwingSet">SwingSet</a>. 
+This would run on top of Javascript rather than Racket/Lisp/Scheme.  I have
+found that in the past I have been not very happy when working with Javascript,
+but Mark suggested I take a look at Agoric's
+<a href="https://github.com/Agoric/Jessie">Jessie</a> subset of Javascript,
+which Mark described as &quot;closer to Scheme&quot; (not syntactically, but
+in terms of language-cleanliness).  It does seem nicer than Javascript;  when
+I admitted to Mark that I am addicted to parenthetical syntax, Mark posed the
+question about whether building a parenthetical version of Jessie would be
+less work than reproducing all the other things that Agoric is doing.  It's a
+good point; I don't know.  I'm unhappy with the idea of pivoting, but I do
+feel like it's probably true that due diligence suggests I should consider it
+carefully.  It is true at least that I would probably reach a broader
+userbase more quickly with the option of Javascript syntax; it's hard for me
+to deny that.  I will probably explore it with some smaller tests of Agoric's
+stuff.  But in the meanwhile, I currently plan to release a very small
+version of the game demo using the toolkit I already am building while
+testing Agoric's infrastructure in parallel.  I suspect we'll see the first
+user-visible outputs of this in early 2020.</p>
+<p>There have been four new <a href="https://librelounge.org/">Libre Lounge</a>
+episodes since my last update.  That's still quite a few episodes to listen to,
+but slower than we previously were updating; all the travel is to blame. 
+However that is settling down and I think we'll be updating more frequently
+soon.  Even so, we have been updating!</p>
+<p>In addition to all this, I suspect there will be at least two major
+announcements in the coming months; stay tuned.  Work has already occured on
+both, but I can only say so much right now.</p>
+<p>Thanks to everyone who has <a href="https://www.patreon.com/cwebber">
+	supported my work</a>.  I work much more than full time in the cause
+of advancing user freedom; it's not easy to fund this work.  I appreciate all
+of you who are giving what you can.</p>
+<p>Now, back to work!</p>
+{{end}}

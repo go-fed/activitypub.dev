@@ -1,0 +1,113 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<blockquote>Implementing ActivityPub in Pleroma</blockquote>
+<p>After
+<a href="https://git.pleroma.social/pleroma/pleroma/tree/feature/activitypub">
+	some work</a>, ActivityPub support will be merged into the develop
+branch of Pleroma in the next days.</p>
+<p>This change will add the following user facing features:</p>
+<ul>
+<li>Support for Mastodon&rsquo;s visibility suggestion settings, like private
+posts and direct messages.</li>
+<li>Slightly faster federation</li>
+</ul>
+<p>Not too much for a few weeks of work. Anyway, here are my thoughts about
+the whole process.</p>
+<h3 id="for-server-admins">For Server Admins</h3>
+<p>After the ActivityPub support is merged, you&rsquo;ll have do a rather
+costly migration. This took a few hours on Soykaf, but only a few minutes on
+testing.pleroma.lol. Expect some downtime. Also, you&rsquo;ll need to run
+this command:</p>
+<pre><code>mix deps.clean --build mime</code></pre>
+<p>This will rebuild the mime type cache and enable the new types necessary
+for ActivityPub.</p>
+<p>There are no further steps. User upgrade will happen automatically.</p>
+<h3 id="notes-on-the-implementation">Notes on the implementation</h3>
+<p>Pleroma is a bit special when it comes to ActivityPub. When I started it
+nearly a year ago, I wanted to experiment with PostgreSQL&rsquo;s
+<code>jsonb</code> data type. This allows you to use PostgreSQL to store
+arbitrary json, but still have the nice SQL features like indexes, full text
+search and so on. Because of this, Pleroma has internally been ActivtyPub
+since the beginning. AP activities are actually saved as json in the
+database.</p>
+<p>Back then, neither GNU Social nor Mastodon supported ActivityPub, so it
+didn&rsquo;t make much sense to talk ActivityPub for federation. Instead, we
+implemented the OStatus federation mechanism.</p>
+<p>Some time down the line, Mastodon decided to implement ActivityPub to
+solve some problems with their OStatus implementation. This lead to them only
+partially federating over OStatus, as their &lsquo;private&rsquo; posts would
+now only federate over AP.</p>
+<p>We have now implemented a working ActivityPub federation module in Pleroma.
+If another user is detected to live on an AP server, federation will only
+happen over ActivityPub.</p>
+<h3 id="gotchas">Gotchas</h3>
+<p>In a previous post, I wrote that you&rsquo;d have to implement whatever
+Mastodon has to be compatible to it. This is absolutely true.</p>
+<h4 id="signatures">Signatures</h4>
+<p>While the standard doesn&rsquo;t mandate any signatures, Mastodon has two
+of them:
+<a href="https://tools.ietf.org/html/draft-cavage-http-signatures-09">
+	HTTP Signatures</a>, which can tell you that a message came from a
+certain account, and
+<a href="https://w3c-dvcg.github.io/ld-signatures/">Linked Data Signatures</a>,
+which can do the same in a different way, and can be relayed (that is, a
+server can share posts of another server, and you can validate them).</p>
+<p>For basic Mastodon support, you&rsquo;ll only need to implement HTTP
+Signatures. You&rsquo;ll miss out on relayed messages, but those can usually
+be fetched anyway. Mastodon will throw away messages without signature.</p>
+<h4 id="webfinger">Webfinger</h4>
+<p>You will also need to implement Webfinger, which is the mechanism that
+turns <a href="mailto:user@domain.com">user@domain.com</a> IDs into
+ActivityPub IDs. This was explicitly
+<a href="https://github.com/w3c/activitypub/issues/20">rejected</a> by the AP
+standardizers, but as it&rsquo;s rather obviously needed, you&rsquo;ll have
+to implement it anyway.</p>
+<h4 id="visibility">Visibility</h4>
+<p>Another thing you&rsquo;ll have to implement is Mastodon&rsquo;s
+visibility model. Mastodon signals post visibility by the adresses it puts
+into the <code>to</code> and <code>cc</code> fields of the activity. These
+visibility suggestions are not enforced by any encryption. Other servers are
+expected to respect them, but there&rsquo;s no guarantee.</p>
+<p>Mastodon has four visibily modes:</p>
+<ul>
+<li>Public. This is signalled by having the special public address
+(<a href="https://www.w3.org/ns/activitystreams#Public">
+	https://www.w3.org/ns/activitystreams#Public</a>) in the
+<code>to</code> field.</li>
+<li>Unlisted. This is signalled by having the special public address in the
+<code>cc</code> field.</li>
+<li>Private (aka &ldquo;Friends Only&rdquo;). This is signalled by NOT having
+the public address in the recipient fields, but having the
+user&rsquo;s follower address in the <code>to</code> field.</li>
+<li>Direct. This is signalled by having just the recipients&rsquo; IDs in the
+<code>to</code> field and NO public address.</li>
+</ul>
+<p>You should probably implement your <code>to</code> and <code>cc</code>
+fields the same way, or your posts will look weird on Mastodon.</p>
+<h4 id="following">Following</h4>
+<p>Following another user is a two part process in ActivityPub. First, you
+genereate a <code>Follow</code> activity and send it to the user you want to
+follow. This user will then respond with an <code>Accept</code>
+(or <code>Reject</code>) activity that has the ID of the <code>Follow</code>
+activity as its object.</p>
+<p>Now, Mastodon doesn&rsquo;t actually have activities internally, it just
+has a Status model that keeps post data. Because of that, Follows actually
+don&rsquo;t have a real ID in Mastodon. This isn&rsquo;t much of a problem
+for outgoing follows from Mastodon. They make up an ID according to some
+scheme (e.g.: <a href="https://mastodon.social/users/gargron#follows/1234),">
+	https://mastodon.social/users/gargron#follows/1234),</a> you use that
+in your Accept, and all is well.</p>
+<p>The other way around is problematic though. Mastodon won&rsquo;t save your
+Follow activity ID (because it doesn&rsquo;t save the Follow activity) and
+will return an made up object ID in their Accept activity, which will look
+similar to the one above. You will have to work around this in your code
+somehow, or you won&rsquo;t be able to follow people on Mastodon.</p>
+<h3 id="activitypub-in-pleroma">ActivityPub in Pleroma</h3>
+<p>With Pleroma, another former OStatus system is now capable of talking
+ActivityPub. For the first few weeks, expect some small federation problems
+from time to time, although those should be fixed fast. I&rsquo;ve been
+running the AP branch on my servers for a few weeks now, and overall
+it&rsquo;s fine.</p>
+<p>Have fun sending pseudo-private messages around to your Mastodon friends
+now!</p>
+{{end}}

@@ -1,0 +1,231 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>A couple of days ago I wrote about
+<a href="/blog/activitypub-is-a-w3c-recommendation/">ActivityPub becoming a W3C Recommendation</a>.
+This was one output of the <a href="https://www.w3.org/wiki/Socialwg/">Social Working Group</a>,
+and the blogpost was about my experiences, and most of my experiences were
+on my direct work on ActivityPub.
+But the Social Working Group did more than ActivityPub; it also on the same day
+published <a href="https://www.w3.org/TR/websub">WebSub</a>, a useful piece of
+technology in its own right which amongst other things also plays a significant
+historical role in what is even ActivityPub's history (but is not used
+by ActivityPub itself), and it has also published several documents which
+are not compatible with ActivityPub at all, and appear to play the same role.
+This, to outsiders, may appear confusing, but there are reasons which I will
+go into in this post.</p>
+<p>On that note, friend and Social Working Group co-participant
+<a href="https://rhiaro.co.uk/">Amy Guy</a> just wrote a reasonably
+and (to my own feelings) highly empathizable
+<a href="https://rhiaro.co.uk/2018/01/social">frustrated blogpost</a>
+(go ahead and read it before you finish this blogpost)
+about the kinds of comments you see with different members of
+different decentralized social web communities sniping at each other.
+Yes, reading the comments is always a precarious idea, particularly on tech
+news sites.
+But what's especially frustrating is seeing comments that we either:</p>
+<ul>
+<li><a href="https://lobste.rs/s/gw8vz8/activitypub_decentralized_social_web#c_eka2h7">Ignored prior art, and just went off and wrote ActivityPub and other specifications with no attention to what was done</a> (the comment &quot;including prior art by its creators&quot; is especially strange, because I assume this means Evan Prodromou (co-chair of the SocialWG) ignoring OStatus, which he largely wrote... I'm not sure how we could have ignored the prior art, in that case, if we were <em>trying</em>.  Evan did encourage the move from anything using OStatus to using ActivityPub, but it certainly wasn't out of ignorance for his own work.)</li>
+<li><a href="https://lobste.rs/s/gw8vz8/activitypub_decentralized_social_web#c_bvqti4">Pushed out multiple conflicting standards as if on a whim</a></li>
+</ul>
+<p>These comments seem to be being made by people who were not part of
+the standards process, so as someone who spent three years of their
+life on it, let me give the perspective of someone who was actually
+there.</p>
+<p>So yes, first of all, it's true that in the end we pushed out two
+&quot;stacks&quot; that were mostly incompatible.
+These would more or less be the &quot;restful + linked data&quot; stack, which
+is <a href="https://www.w3.org/TR/activitypub/">ActivityPub</a> and
+<a href="https://www.w3.org/TR/ldn/">Linked Data Notifications</a> using
+<a href="https://www.w3.org/TR/activitystreams-core/">ActivityStreams</a>
+as its core (but extensible) <a href="https://www.w3.org/TR/activitystreams-vocabulary/">vocabulary</a>
+(which are directly interoperable, and use the same &quot;inbox&quot; property
+for delivery), and the &quot;Indieweb stack&quot;, which is
+<a href="https://www.w3.org/TR/micropub/">Micropub</a> and
+<a href="https://www.w3.org/TR/webmention/">Webmention</a>.
+(And there's also <a href="https://www.w3.org/TR/websub">WebSub</a>, which is
+not really either specifically part of one or the other of those
+&quot;stacks&quot; but which can be used with either, and is of such historical
+significance to federation that we wanted it to be standardized.)
+Amy Guy did a good job of mapping the landscape in her
+<a href="https://w3.org/TR/social-web-protocols">Social Web Protocols</a> document.</p>
+<p>Gosh, two stacks!
+It does kind of look confusing, if you weren't in the group, to see
+how this could have happened.
+Going through meeting logs is boring (though the
+<a href="https://www.w3.org/wiki/Socialwg/#Past_Meetings">meeting logs are up there if you feel like it</a>)
+so here's what happened, as I remember it.</p>
+<p>First of all, we didn't just start out with two stacks, we started out
+with three.
+At the beginning we had the linked data folks, the RESTful &quot;just speak
+plain JSON&quot; development type folks, and the Indieweb folks.
+Nobody really saw eye to eye at first, but eventually we managed to reach
+some convergence (though not as much as I would have liked).
+In fact we managed to merge two approaches entirely: ActivityPub is a
+RESTful API that can be read and interpreted as just JSON, but thanks to
+JSON-LD you have the power of linked data for extensions or maybe because
+you really like doing fancy RDF the-web-is-a-graph things.
+And ActivityPub uses the very same inbox of Linked Data Notifications,
+and is directly interoperable.
+Things did not start out as directly interoperable, but Sarven
+Capadisli and Amy Guy (who was not yet a co-author of ActivityPub)
+were willing to sit down and discuss and work out the details,
+and eventually we got there.</p>
+<p>Merging the RESTful + Linked Data stuff with the Indieweb stuff was a
+bit more of a challenge, but for a while it looked like even that
+might completely happen.
+For those that don't know, Linked Data type people and Indieweb type
+people have, for whatever reason, historically been at each others'
+throats despite (or perhaps because of) the enormous similarity between
+the kind of work that they're doing (the main disagreements being
+&quot;should we treat everything like a graph&quot; and &quot;are namespaces a good
+idea&quot; and also, let's be honest, just historical grudges).
+But Amy Guy long made the case in the group that actually the
+divisions between the groups were very shallow and that with just a
+few tweaks we could actually bridge the gap (this was the real origin
+of the <a href="https://w3.org/TR/social-web-protocols">Social Web Protocols</a>
+document, which though it eventually became a document of the different
+things we produced, was originally an analysis of how they weren't
+so different at all).
+At the face to face summit in Paris (which I did not attend, but
+ActivityPub co-editor Jessica Tallon did) there was apparently an
+energetic meeting over a meal where I'm told that Jessica Tallon and
+Aaron Parecki (editor of Micropub and Webmention) hit some kind of
+epiphany and realized yes, by god, we can actually merge these
+approaches together.
+Attending remotely, I wasn't there for the meal, but when everyone
+returned it was apparent that something had changed: the conversation
+had shifted towards reconciling differences.
+Between the Paris face to face meeting and the next one, energy was
+high and discussions active on how to bring things together.
+Aaron even began to consider that maybe Micropub (and/or? I forget if
+it was just one) Webmention could support ActivityStreams, since
+ActivityStreams already had an extension mechanism worked out.
+At the next face to face meeting, things started out optimistic as
+well... and then suddenly, within the span of minutes, the whole idea
+of merging the specs fell apart.
+In fact it happened so quickly that I'm not even entirely sure what did
+it, but I think it was over two things: one, Micropub handled an update
+of fields where you could add or remove a specific element from a list
+(without giving the entire changed list as a replacement value)
+and it wasn't obvious how it could be done with ActivityPub, and two,
+something like &quot;well we already have a whole vocabulary in Microformats
+anyway, we might as well stick with it.&quot;
+(I could have the details wrong here a bit... again, it happened very
+fast, and I remember in the next break trying to figure out whether or
+not things did just fall apart or not.)</p>
+<p>With the the dream of Linked Data and Indieweb stuff being reconciled
+given up on, we decided that at least we could move forward in
+parallel without clobbering, and in fact while actively supporting,
+each other.
+I think, at this point, this was actually the best decision possible,
+and in a sense it was even very fruitful.
+At this point, not trying to reconcile and compromise on a single
+spec, the authors and editors of the differing specifications still
+spent much time collaborating as the specifications moved forward.
+Aaron and other Indieweb folks provided plenty of useful feedback for
+ActivityPub and the ActivityPub folks provided plenty of useful feedback
+for the Indieweb folks, and I'd say all our specifications were improved
+greatly by this &quot;friendly treaty&quot; of sorts.
+If we could not unify, we could at least cooperate, and we did.</p>
+<p>I'd even say that we came to a good amount of mutual understanding and
+respect between these groups <em>within</em> the Social Web Working Group.
+People approached these decentralization challenges with different
+building blocks, assumptions, principles, and goals... hence at some
+point they've encountered approaches that didn't quite jive with their
+&quot;world view&quot; on how to do it right (TM).
+And that's okay!
+Even there, we have plenty of space for cooperation and can learn from
+each other.</p>
+<p>This is also true with the continuation of the Social Web Working Group,
+which is the <a href="https://www.w3.org/wiki/SocialCG">SocialCG</a>, where the two
+co-chairs are myself and Aaron Parecki, who are both editors of
+specifications of the conflicting &quot;stacks&quot;.
+Within the Social Web Community Group we have a philosophy that our
+scope is to work on collaboration on social web protocols.
+If you use a different protocol than another person, you probably can still
+collaborate a lot, because there's a lot of overlap between the
+<em>problem domains</em> between social web protocols.
+Outside the SocialWG and SocialCG it still seems to be a different
+story, and sadly linked data people and Indieweb people seem to still
+show up on each others' threads to go after each other.
+I consider that a disappointment... I wish the external world would
+reflect the kind of sense of mutual understanding we got in the
+SocialWG and SocialCG.</p>
+<p>Speaking of best attempts at bringing unity, my main goal at
+participating in the SocialWG, and my entire purpose of showing up in
+the first place, was always to bring unity.
+The first task I performed over the course of the first few months at
+the Social Working Group was to try to bring all of the existing
+distributed social networks to participate in the SocialWG calls.
+Even at that time, I was worried about the situation with a &quot;fractured
+federation&quot;... MediaGoblin was about to implement its own federation
+code, and I was unhappy that we had a bunch of libre distributed social
+network projects but none of them could talk to each other, and no matter
+what we chose we would just end up contributing to the problem.
+I was called out as naive (which I suppose, in retrospect, was
+accurate) for a belief that if we could just get everyone around the
+table we could reconcile our differences, agree on a standard that
+everyone could share in, and maybe we'd start singing Kumbaya or
+something.
+And yes, I was naive, but I did reach out to everyone I could think of
+(if I missed you somehow, I'm sorry): Diaspora, GNU Social, Pump.io
+(well, they were already there), Hubzilla, Friendica, Owncloud (later
+Nextcloud)... etc etc (Mastodon and some others didn't even exist at
+this point, though we would connect later)... I figured this was our
+one chance to finally get everyone on board and collaborate.
+We did have Diaspora and Owncloud participants for a time (and Nextcloud
+even has begun implementing ActivityPub), and plenty of groups said they'd
+like to participate, but the main barrier was that the standards process
+took a lot of time (true story), which not everyone was able to allocate.
+But we did our best to incorporate and respond to feedback whever we got
+it.
+We did detailed analysis on what the major social networks were providing
+and what we needed to cover as a result.
+What I'm trying to say is: ActivityPub was my best attempt to bring
+unity to this space.
+It grew out of direct experiences from developing previous standards
+between OStatus, the Pump API, and over a decade of developing social
+network protocols and software, including by people who pioneered much
+of the work in that territory.
+We tried through long and open comment periods to reconcile the needs
+of various groups and potential users.
+Maybe we didn't always succeed... but we did try, and always gave it
+our best.
+Maybe ActivityPub will succeed in that role or maybe it won't... I'm
+hopeful, but time is the true test.</p>
+<p>Speaking of attempting to bring unity to the different decentralized
+social network projects, probably the main thing that disappoints me
+is the amount of strife we have between these different projects.
+For example, there are various threads pitting Mastodon vs GNU Social.
+In fact, Mastodon's lead developer and GNU Social's lead developer get
+along just fine... it's various members of the communities of each
+that tend to (sounds familiar?) be hostile.</p>
+<p>Here's something interesting: decentralized social web initiatives
+haven't yet faced an all-out attack from what would be presumably be
+their natural enemies in the centralized social web: Facebook,
+Twitter, et all.
+I mean, there have been some aggressions, in the senses that bridging
+projects that let users mirror their timelines get shut down as terms
+of service violations and some comparatively minor things, but I don't
+know of (as of yet) an outright attack.
+But maybe they don't have to: participants in the decentralized social
+web is so good at fighting each other that apparently we do that work
+for them.</p>
+<p>But it doesn't have to be that way.
+You might be able to come to consensus on a good way forward.
+And if you can't come to consensus, you can at least have friendly and
+cooperative communication.</p>
+<p>And if somehow, you can't do any of that, you just not openly attack
+each other.
+We've got enough hard work to fight to make the federated social web
+work without fighting ourselves.
+Thanks.</p>
+<p><strong>Update:</strong> A previous version of this article said &quot;I even saw
+someone tried to write a federation history and
+<a href="https://robek.world/featured/what-is-gnu-social-and-is-mastodon-social-a-twitter-clone/">characterize it as war</a>&quot;,
+but it's been
+<a href="https://mastodonsocial.ru/&#64;drequivalent/99416770118395375">pointed out</a>
+that I'm being unfair here, since the very article I'm pointing to
+itself refutes the idea of this being war.
+Fair point, and I've removed that bit.</p>
+{{end}}

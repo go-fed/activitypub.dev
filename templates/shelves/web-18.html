@@ -1,0 +1,337 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<blockquote>Reading encryption papers so you don&#39;t have to</blockquote>
+<p>The fediverse has been buzzing with talk about end-to-end encryption. In
+this (quite long) article, I&rsquo;ll try to explain what E2EE is, what some
+common approaches to it are in the instant messaging space, and what I think
+would be the best way to use it on the fediverse.</p>
+<h2 id="lets-study-what-is-e2ee">Let&rsquo;s Study: What is E2EE?</h2>
+<p>Pretty much all fediverse servers use encryption during transport of your
+message. That means that when you write &ldquo;#cofe&rdquo; and smash that
+&lsquo;Submit&rsquo; button, your browser encrypts the message and sends it
+to your server. Your server can decrypt your message, and it sends it on to
+other servers. This connection is, again, encrypted. So nobody between you
+and your server, or between your server and other servers, can read your
+message.</p>
+<p>Still, if you send a private message to your friend on another server, who
+can read it? You and your friend can, of course, but also your two servers
+and server administrators. The messages live in their database in clear text,
+ready to be read by a curious admin.</p>
+<p>End-to-end encryption solves this problem, making the message readable by
+only you and the recipient. How does that work? Your client encrypts your
+message with a key that only you and your friend know. Then, you send the
+encrypted message to the server. The server can&rsquo;t read it and just
+sends it on. Finally, it arrives at your friend&rsquo;s client, is decoded
+there and can be read (&lsquo;suya..').</p>
+<p>But how do you two exchange that secret key? Let&rsquo;s quickly review
+two popular approaches.</p>
+<h3 id="pgp--public-key-cryptography">PGP / public key cryptography</h3>
+<p>PGP (Pretty Good Privacy) and similar cryptographic approaches are called
+asymmetric, because they have two keys instead of one. One of those is the
+<code>private key</code> that you don&rsquo;t share with anyone, the other
+one is the aptly named <code>public key</code> which you can share freely
+with anybody who should send you an encrypted message. In this system, the
+message can be encrypted with the public key, but only the private key can
+decrypt it.</p>
+<p>Now anyone who wants to send you a message can encrypt it (just for you!),
+send it through any channel, and you can decrypt it on your end. Seems easy
+enough! So why is this not the preferred approach for messaging systems? Well,
+it has a big drawback. The same key is used to decode every message. If that
+key gets stolen, every message ever sent can be decrypted. It&rsquo;s also
+not easy to switch to a new key, as you then have to give out the new public
+key to everyone. So these keys both tend to be a very valuable and long-lived,
+both properties you wouldn&rsquo;t want in a cryptography system.</p>
+<h3 id="signal--olm--double-ratchet-cryptography">
+	Signal / Olm / Double Ratchet cryptography</h3>
+<p>This one goes by a lot of names. It&rsquo;s used by Signal, WhatsApp,
+Matrix and many other messaging systems. Double ratchet cryptography is one
+way to make a stolen message key less problematic. It&rsquo;s also a lot more
+complicated than the rather simple PGP. First, let&rsquo;s explain what a
+&lsquo;ratchet&rsquo; is in this context.</p>
+<p>A ratchet is a function that can generate a series of values based on
+previous values, but you can&rsquo;t get back from later values to previous
+values. These are used to generate the keys. Let me illustrate this. (Note:
+The ratchets here are a bit simpler than how the are actually used in the
+protocol. The idea is the same.)</p>
+<h4 id="fx--x--2"><code>f(x) = x * 2</code></h4>
+<p>Here&rsquo;s a function that&rsquo;s not a ratchet.</p>
+<p>If you start with the value <code>1</code>, how does this develop when we
+always feed the next step with the output of the last? Well, I&rsquo;m sure
+you can remember this much math:</p>
+<ul>
+<li>f(1) = 2</li>
+<li>f(2) = 4</li>
+<li>f(4) = 8</li>
+<li>f(8) = 16</li>
+</ul>
+<p>So we do get a new value each time, and it even is unique. But if you see
+a value like 16, it&rsquo;s trivial to go back in time to any previous step -
+just divide by two again! So we can not use this function as a ratchet.</p>
+<h4 id="fx--md5x"><code>f(x) = md5(x)</code></h4>
+<p>MD5 is a hashing function. You can look it up on Wikipedia if you want to
+know details, but for now it&rsquo;s enough to know that it generates a value
+for any input. Let&rsquo;s try our game again.</p>
+<ul>
+<li>f(1) = b026324c6904b2a9cb4b88d6d61c81d1</li>
+<li>f(b026324c6904b2a9cb4b88d6d61c81d1) = aaee1544492d49d452b051004d391f56</li>
+<li>f(aaee1544492d49d452b051004d391f56) = ca745939d5fe6f6b781c74dee3c3153c</li>
+</ul>
+<p>Now if you manage to somehow steal the key with the value
+<code>ca745939d5fe6f6b781c74dee3c3153c</code> from somebody, you&rsquo;ll
+have no way to figure out the earlier keys. Thus, we can use these keys to
+encrypt our messages, and nobody can go &lsquo;back in time&rsquo; to decrypt
+earlier messages.</p>
+<p>(Note: don&rsquo;t use MD5 in any cryptographical context. It&rsquo;s not
+actually secure anymore. Use something like SHA-3 instead.)</p>
+<h4 id="using-the-ratchet">Using the ratchet</h4>
+<p>Now to send a message, we need a key from the ratchet. But to get the
+ratchet, first me and my friend will need to exchange some starting value for
+it that only we two know. Luckily, there&rsquo;s an almost magical procedure
+called the <code>Diffie-Hellman key exchange</code> which allows exchanging a
+secret key over a public channel. It&rsquo;s also during this step that your
+identity is checked so that nobody can impersonate you. Yes, this is actually
+possible, and you&rsquo;ll just have to believe me because this introduction
+is already too long.</p>
+<p>Now that you two have a secret, you can feed the ratchet with it and start
+sending messages with the keys it generates, one after the other. You have
+both a sending and receiving ratchet (and no, this is not the
+&lsquo;double&rsquo; of the double ratchet), so when you send a message, you
+advance your sending ratchet and encode a message with the key. When you
+receive message, you advance the receiving ratchet and decode it with the key.
+Your sending ratchet is your friend&rsquo;s receiving ratchet and vice
+versa.</p>
+<p>As you see here, every single message is using a new key for encryption.
+If you can steal the encryption key at any point it time, you can only decode
+exactly one message with it. That&rsquo;s a lot better than the &lsquo;decode
+everything&rsquo; we had with PGP!</p>
+<h4 id="double-the-ratchets-double-the-fun">Double the ratchets, double the fun</h4>
+<p>But what if an attacker can steal the ratchet? They can&rsquo;t decode old
+messages, because those keys are already gone. But they decode every new
+message that&rsquo;s being send. Not so good! That&rsquo;s where the second
+ratchet comes into play.</p>
+<p>While sending a message, you advance your key ratchet and send the
+encrypted text. But with it, you also send another try at doing a Diffie
+Hellman key exchange. As soon as the other side sends you a message back, you
+two can complete the DH exchange and have a new secret key that only you two
+know! This one is then used to advance the DH ratchet (this is the
+&lsquo;double&rsquo; ratchet), which generates a value that in turn is used
+to generate new sending and receiving ratchets.</p>
+<p>So the ratchets that generate your keys are thrown away every time a send
+receive cycle is completed! What this means is that, should an attacker get
+access to the key ratchet, they can only read your messages until you send
+and receive a message from your friend. In this sense, the algorithm is
+self-healing and will make the once-broken encryption work again after a
+short amount of messages (unless it&rsquo;s a very one-sided
+conversation)&hellip;</p>
+<p>Let&rsquo;s see how these systems work out in practice.</p>
+<h2 id="using-e2e">Using E2E</h2>
+<p>It&rsquo;s often said that the best way to use encryption is to enable it
+by default. If possible, you should even make it impossible to send
+unencrypted messages. This is because, by making even non-secret
+conversations encrypted, you make secret and non-secret conversations look
+the same, so an attacker has a harder time to find &lsquo;suspicious&rsquo;
+people to attack.</p>
+<p>But is this true in every case? It surely would be if encryption was free,
+but, depending on the kind of encryption, it comes with huge tradeoffs.</p>
+<p>Let&rsquo;s refresh our knowledge of the nice properties of the Double
+Ratchet algorithm:</p>
+<ol>
+<li>Each message is encoded with a different key. If an attacker gets a
+message key, they can only decode that one message.</li>
+<li>If the client doesn&rsquo;t keep each of these keys around, each message
+can only be decoded once.</li>
+<li>If an attacker gets access to the data that generates the keys (the key
+ratchet), they can only decode messages until the conversation participants
+complete one send-reply cycle (because the DH ratchet that is used to
+generate the key ratchet will be replaced). The attacker can&rsquo;t decode
+any past messages.</li>
+<li>Once decoded, the messages are deniable: It&rsquo;s not possible to prove
+that the other side sent them.</li>
+</ol>
+<p>This is indeed very secure. But let&rsquo;s look at a very natural usage
+pattern for messengers.</p>
+<h3 id="a-day-in-the-life-of-e2e-encryption">A day in the life of E2E encryption</h3>
+<p>I&rsquo;m meeting a friend for cofe. We&rsquo;re talking about this cool
+new encrypted messenger, we install it and add each other. On sending a
+message, the app asks us to verify that the other person is indeed the person
+we&rsquo;re talking to. We do that (we&rsquo;re sitting next to each other,
+anyway). I send a message to my friend from my phone. It is encrypted and she
+reads it on her phone. We send a few messages back and forth and everything
+works fine. Later that day, I&rsquo;m at my PC and want to answer her.
+Opening the chat, there are no messages. Why?</p>
+<p>The server didn&rsquo;t save them after the clients acknowledged the
+receipt, because they are only decryptable by the client anyway. So I
+don&rsquo;t get any history.</p>
+<p>I send a message to her from my pc. But then, I see my phone buzzing with
+a message, asking me to verify the new participating device in the
+conversation. Why that? Well, someone could have stolen my password and added
+a new device with it. In that case, I absolutely wouldn&rsquo;t want to trust
+any new devices! Alright, I verify that it is indeed me. Suddenly, I get a
+call from my friend. She&rsquo;s asking me if the new device is really me.
+Just like me, she too has to verify the identify of the new device. End-to
+End encryption is not user-to-user encryption, it is device-to-device
+encryption, which means that every device has to verify each other device.</p>
+<p>Now imagine a group chat with 200 people, and then you add one new device.
+Now you have to verify 200 people. And they have to verify you.</p>
+<p>I could spin the story further, but I think the point is made: encryption
+is not free. It comes with usability issues that can make it essentially
+unusable for many cases. How many times will non-crypto-nerds actually verify
+another device? Many apps have a &lsquo;send unverified&rsquo; button for
+these cases. Use that a few times, and you&rsquo;re looking at this.</p>
+<p>So how do existing systems deal with this issue? WhatsApp and Line take a
+simple approach: You can only have one device. When you want to use another
+device, your old one has to give. You can&rsquo;t even move your messages,
+generally. The identity is guaranteed by the phone number, so you can skip
+the &lsquo;verify identity&rsquo; check. The rules for using the chat systems
+make it so that the issues mentioned above never occur. The focus on a
+one-device-policy also makes the system easy to grasp for users.</p>
+<p>&ldquo;But Lain&rdquo;, you will say, &ldquo;I&rsquo;ve been using Matrix
+and I do have message history, and I don&rsquo;t have to verify stuff all the
+time either!&quot;. Very true. The current Matrix system is quite user
+friendly. You can chat away, have message history, add new devices without
+verification, and you still have that nice lock symbol (or, in Matrix&rsquo;s
+case, a shield) that tells you you are encrypted.</p>
+<p>How do they do it? Well, by trading away security for convenience. The
+basic encryption algorithm in Matrix is Olm. This is pretty much the same as
+the Signal double ratchet I talked about and has the same security properties.
+But no actual chat messages are sent over this protocol. Instead, they have
+a separate protocol called Megolm. It only has one sending ratchet per device
+that is supposed to be sent around to recipients so they can decode your
+message. This ratchet is NOT reset on every send-receive cycle. The clients
+are supposed to keep the ratchet around in its earliest state, so that they
+can decode each message from that point in time on.</p>
+<p>Now imagine you&rsquo;re adding a new device to a chat. Your existing
+device just sends over the earliest Megolm ratchet it has to your new device.
+Your new device can then decode all the messages that your earlier device sent.
+That way, you can keep your history synced across devices.</p>
+<p>But what about verification? The excellent XMPP client
+&ldquo;Conversation&rdquo; has an approach called Blind Trust Before
+Verification. It means that by default, you never verify identities at all.
+You just trust them blindly. But then, as soon as you verify even one device,
+you&rsquo;ll have to verify each new device before sending messages to them
+after that.</p>
+<p>The idea behind this is a casual user will never encounter the dreaded
+&lsquo;verify the new device&rsquo; screen. The security-conscious user will
+verify once and have a secure system ever after. Now, this solves the problem
+for users who ignore everything and just don&rsquo;t care (a questionably
+secure approach). But for users who still verify, they still have that
+200-device problem.</p>
+<p>Matrix came up with an extended approach. It is also Blind Trust Before
+Verification. When nobody is verified in a chat, you get a black shield. That
+means &lsquo;we have encryption, but you don&rsquo;t know who you&rsquo;re
+talking to and also don&rsquo;t care&rsquo;. Let&rsquo;s say you verify your
+friend&rsquo;s phone. You now get a green shield, which means
+&lsquo;encrypted and everyone is verified&rsquo;. Now you add another device
+of yours, and your shield changes to red. That means: &lsquo;encrypted, and
+you care about verification, and not all devices are verified!'. DANGER!! No
+biggie, you verify your device, shield is green again. But what about your
+friend? Don&rsquo;t they have to verify your new device?</p>
+<p>Turns out, they don&rsquo;t! By verifying your new device with your old one,
+your old device vouches for new one. Your friend&rsquo;s device will accept
+this verification and not ask for any additional proof that your new device
+is indeed yours.</p>
+<blockquote>
+<p>With the new shields, we no longer nag the user whenever a new device is
+added in their conversations - instead we expect them to see the room&rsquo;s
+shields flash red everywhere if an untrustworthy device is added.</p>
+</blockquote>
+<p>This solves the 200-device-problem. When a new device by an existing user
+is added, only one person has to verify it, not 200. But why doesn&rsquo;t
+everybody do it like this?</p>
+<p>Well, you delegate device verification to another user that you might or
+might not trust with that. Let&rsquo;s say you&rsquo;re in a chat with a user
+who already has 10 devices. On the user&rsquo;s laptop, someone installed a
+keylogger and stole his password. They also know the victim personally and
+can get access to their phone for a short amount of time. While the victim is
+making room for more cocktails, the attacker logs in on their own device with
+the victim&rsquo;s credentials. The attacker joins the existing chat. There
+are now 11 devices for that user, one is not verified, and the shield turns
+red. Now they verify the new device with the victim&rsquo;s phone and voila,
+green shield again. Will anyone actually count the devices to see how the
+number changed? The attacker can also read all the old history, because the
+megolm ratchet was sent to their new device.</p>
+<p>This scenario is impossible with WhatsApp, for example. So, in some
+situations, WhatsApp is more secure than this FOSS solution.</p>
+<p>Now, I&rsquo;m not saying that the Matrix team is wrong in doing this. The
+security / convenience tradeoff might well be worth it, overall. What I am
+saying is that these subtle effects of different cryptological algorithms are
+nearly impossible for the end user to grasp. I had to read a few papers
+during a sleepless night to come to a somewhat proper understanding of the
+implications. I&rsquo;m quite sure that even explaining how the double
+ratchet works will take an hour or two, if you&rsquo;re explaining to a smart
+person who&rsquo;s not versed in cryptography. And they just wanna chat!</p>
+<p>Making these tradeoffs does not quite lead to security theater, but
+it&rsquo;s getting dangerously close. &ldquo;End-to-End encryption&rdquo;
+becomes a feature to check off your list. The importance of the actual
+algorithm and user experience is often swept under the rug. As long as you
+have a shield or lock symbol, you&rsquo;re good.</p>
+<p>What can we do then? Existing fediverse servers are all multi-device, so
+we can&rsquo;t go the WhatsApp way of using just one device. We also
+don&rsquo;t want verification hell, so that&rsquo;s out, too. Copy what
+Matrix is doing? I don&rsquo;t really think this is a good idea. There are
+too many subtle issues with it that I wouldn&rsquo;t want to expose casual
+users to. So what else can we do then?</p>
+<h2 id="radical-simplicity">Radical simplicity</h2>
+<p>Non-technical end users will always have problems understanding the
+properties of encryption when there is a mismatch between the UX of the
+application and the underlying encryption system, and it&rsquo;s not easy to
+understand for techies, either. This is the case when you use something like
+the double ratchet and then pretend to users that these are user-to-user
+encrypted systems. They are not! They are actually device-to-device encrypted,
+but sometimes a user has multiple devices. This is the part were the
+confusion comes in! And worse, the identity and key management&hellip;</p>
+<p>So let&rsquo;s just match the encryption to the user experience. Encrypted
+chats should give a user this:</p>
+<ul>
+<li>1-on-1, Device-to-Device chats using the double ratchet system</li>
+<li>On-device search</li>
+<li>On-device history</li>
+</ul>
+<p>In this system, every encrypted chat is explicitly initiated between two
+devices. If I&rsquo;m at my PC and want to write a secret message to my friend,
+I can do that by selecting one of her devices (for example her phone) from a
+menu and use that to start an encrypted conversation. I can also write her
+from my phone, but that&rsquo;s a separate conversation!</p>
+<p>This is pretty much the system that WhatsApp or Line use, just that they
+also enforce the use of only one single device. In my conversations about
+this with non-technical people, they usually had difficulty to understand all
+the trade-offs made in multiple-device-per-user encrypted chats (like matrix
+uses), but understanding device-to-device encryption was straightforward.
+There was also a higher acceptance of losing features like shared message
+history, because now it was clear <em>why</em> this was happening.</p>
+<p>I think that this is a good first paradigm to try out when implementing
+E2EE chats on the Fediverse. It would give users an extremely secure
+encrypted chat that is easy to use and easy to understand. It also makes it
+explicit just what you lose when you go the encryption route. Additionally,
+keeping encrypted chats per-device will prevent less-secure devices (like
+browsers) from mixing with secure devices (like phones or applications) any
+more than necessary. There are only two possible weak links in the chain for
+every chat, not potentially hundreds.</p>
+<p>(Update, 2020-06-20)</p>
+<p>It seems that I didn&rsquo;t make it clear enough that I expect encrypted
+chats to NOT be the default. They shouldn&rsquo;t even be too easy to initiate,
+and probably come with a warning. This is an important point! It&rsquo;s not
+possible to keep the conveniences of unencrypted chats and a very high level
+of security at the same time. In the model I&rsquo;m thinking of, encrypted
+chats become something you choose to use explicitly, fully knowing that you
+have to give up some convenience for the gained security. Just like
+whispering in real life is less convenient than talking normally, so it is
+with an encrypted chat. Making this trade-off explicit, visible and
+understandable to the user is the key aspect here.</p>
+<h3 id="dash-to-the-future">Dash to the Future</h3>
+<p>Will Fediverse users eventually want encrypted group chats? I don&rsquo;t
+doubt it. At that point, it will be interesting to figure out what they want
+more: The better-than-nothing security that a system like Matrix/Megolm
+provides, or the very hard security of the double ratchet and manual device
+verification?</p>
+<p>For most groups, being unencrypted is just fine. People want server side
+search. They want to share history with new participants. Often they even
+want things to be completely open, free for anyone to see. This is how most
+IRC chats have worked for decades now.</p>
+<p>Still, let&rsquo;s cross that river when we get there. If we have a good
+solution for 1-on-1 chats, we can use that user knowledge to extend the UX to
+group variants. Until then, let&rsquo;s do our best and make it possible to
+share birthday gift tips on the Fediverse.</p>
+<p>If you want to comment on this article, do it on
+<a href="https://lain.com/notice/9wFMbRcXyMtn7D7qVs">Fediverse post</a>.</p>
+{{end}}

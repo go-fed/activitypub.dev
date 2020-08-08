@@ -1,0 +1,121 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>Having spent the majority of the last three years of my life on it, I'm
+happy to announce that <a href="https://www.w3.org/TR/activitypub/">ActivityPub</a>
+is <a href="https://www.w3.org/blog/news/archives/6785">now a W3C Recommendation</a>.
+Whew!  At last!  Horray!  Finally!
+I've written
+<a href="https://www.fsf.org/blogs/community/victory-for-libre-networks-activitypub-is-now-a-w3c-recommended-standard">some more words on this over on the FSF's blog</a>
+so maybe read that.</p>
+<p>As for things I didn't put there, that fit more on a personal blog?
+I guess that's where I speak about my personal life experience and
+feelings about it and I would say they're a mix of elation (for making
+it), relief (also for making it, because it wasn't always clear that
+we would), and burnout (I had no idea this process was going to suck
+up so much of my life).</p>
+<p>I didn't expect this to take over my life so thoroughly.
+I did say this bit on the FSF blogpost but when Jessica Tallon and I
+got involved in the <a href="https://www.w3.org/wiki/Socialwg/">Social Working Group</a>
+we figured we were just showing up for an hour a week to make sure
+things were on track.
+I did think the goal of the Social Working Group was the right one:
+we had a lot of libre social networks but they were largely fractured
+and failed at interoperability... surely we could do better if we got
+everyone in a room together!
+(Getting everyone in the room wasn't easy and didn't always happen,
+though I sure as heck tried, particularly early on.)
+But I figured the other people in the room would be the experts, the
+responsible ones, and we'd just be tagging along to make sure our
+needs were met.
+Well, the next thing you know we're co-editors of ActivityPub,
+and that time grew from an hour a week to filling most of my week to
+sometimes urgent, grueling deadlines (granted, I made most of them a
+lot more complicated than I needed to be by doing example
+implementations in obscure languages, etc etc).</p>
+<p>I'm feeling great about things now, but that wasn't always the case
+through this.
+I've come to learn how hard standards work is, and I've been doing
+other specification work recently too (more on that in a coming
+blogpost), but I'll say that for whatever reason (and I can think of
+quite a few, but it's not worth going into here), ActivityPub has been
+far harder than anything else I've worked on in the standards space.
+(Maybe that's just because it's the first standard I've gotten to
+completion though.)</p>
+<p>In fact, in early-to-middle 2017 I was in quite a bit of despair,
+because it seemed clear that ActivityPub was going to not make it in
+time as an official recommended standard.
+The Social Working Group's charter was going to run out at mid-2017,
+and it had already been extended once... apparently getting a second
+extension was nearly unheard of.
+I resigned myself to the idea that ActivityPub would be published
+as a note, but that there was no way that we would be able to make it
+to getting the shiny foil stamp of being an actual recommended
+standard.
+Instead, I shifted my effort to making sure that my ActivityPub
+implementation work would support enough of ActivityStreams
+(which is what ActivityPub uses as its vocabulary) to make sure that
+at least that would make it as a standard with all the components we
+required, since we at least needed to be able to refer to that
+vocabulary.</p>
+<p>But <a href="https://joinmastodon.org/">Mastodon</a> saved ActivityPub.
+I'll admit that at first I was skeptical about all the hype I was
+hearing about Mastodon... but
+<a href="https://rhiaro.co.uk/">Amy Guy</a>
+(co-author of ActivityPub, and whose PHD thesis, &quot;Presentation of Self
+on a Decentralised Web&quot;, is worth a read at the memorable domain of
+<a href="http://dr.amy.gy/">dr.amy.gy</a>)
+convinced me that I really ought to check out what was going on in
+Mastodon land.
+And I found I really did like what was happening there... and
+connected to a community that felt like what I had missed from the
+heyday of StatusNet/identi.ca, while having a bit of its own flavor of
+culture, one that I really felt at home in.
+It turned out this was good timing... Mastodon was having trouble
+expanding the privacy needs of its users on OStatus, and it turns out
+private addressing was exactly one of the reasons that ActivityPub was
+developed.
+(I'm not claiming credit for this, I'm just talking from my perspective...
+<a href="https://github.com/tootsuite/mastodon/issues/1557#issuecomment-328082721">the Mastodon ActivityPub implementation issue</a>
+can give you a better sense of where credit is due, and here I didn't
+really do much.)
+This interest came right at the right time... it began to also drum up
+interest from many other participants too... and it pretty much
+directly lead to another extension to the Social Working Group, giving
+us until the end of 2017 to wrap up the work on standardizing
+ActivityPub.
+Whew!</p>
+<p>But Mastodon is not alone.
+Today there are a <a href="https://activitypub.rocks/implementation-report/">growing number of implementers of ActivityPub</a>.
+I'd encourage you, if you haven't, to
+<a href="https://peertube.cpy.re/videos/watch/da2b08d4-a242-4170-b32a-4ec8cbdca701">watch this video of PeerTube and Mastodon federating over ActivityPub</a>.
+Pretty cool stuff!
+ActivityPub has been a massive group effort, and I'm relieved to see
+that all that hard work has paid off, for all of us.</p>
+<p>Meanwhile, there's a lot to do still ahead.
+MediaGoblin, ironically, has fallen behind on its own federation
+support in the interest of advancing federation standards (we have
+some federation code, but it's for the old pre-ActivityPub Pump API,
+and it's bitrotted quite a bit) and I need to figure out what the next
+steps are and discuss with the community (expect more on that in
+the next few months, and sure to be discussed at my talk at
+Libreplanet 2018).
+And ActivityPub may be &quot;done&quot; in the sense that &quot;it made it through
+the standards process&quot;, but some of the most interesting work is still
+ahead.
+The <a href="https://www.w3.org/wiki/SocialCG">Social Web Community Group</a>,
+of which I am co-chair, meets bi-weekly to talk and collaborate on the
+interesting problems that implementers of libre networks are
+encountering.
+(It's open to everyone, maybe you should join?)</p>
+<p>On that note, in a recent Social Web Community Group meeting, Evan
+Prodromou was showing off some of his latest ActivityPub projects
+(<a href="https://tags.pub/">tags.pub</a> and <a href="https://places.pub">places.pub</a>).
+I'm paraphrasing here, but he said something interesting, which has
+stuck with me:
+&quot;We did all that standardizing work, and that's great, but now we get
+to the fun part... now we get to build things.&quot;</p>
+<p>I agree.
+I look forward to what the next few years of fun ActivityPub
+development bring.
+Onwards!</p>
+{{end}}

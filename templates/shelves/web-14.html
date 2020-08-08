@@ -1,0 +1,264 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>How can systems communicate and share meaning?
+Communication within systems is preceded by a form of meta-communication;
+we must have a sense that we mean the same things by the terms we use
+before we can even use them.</p>
+<p>This is challenging enough for humans who must share meaning, but we
+can resolve ambiguities with context clues from a surrounding narrative.
+Machines, in general, need a context more explicitly laid out for them,
+with as little ambiguity as possible.</p>
+<p>Standards authors of open-world systems have long struggled with such
+systems and have come up with some reasonable systems; unfortunately
+these also suffer from several pitfalls.
+With minimal (or sometimes none at all) adjustment to our tooling,
+I propose a change in how we manage ontologies.</p>
+<h3>How we deal with ambiguous terms today</h3>
+<p>Consider <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-note">Note</a>,
+a seemingly simple term in
+<a href="https://www.w3.org/TR/activitystreams-vocabulary/">ActivityStreams</a>,
+the vocabulary used by <a href="https://www.w3.org/TR/activitypub/">ActivityPub</a>.
+The meaning of <code>Note</code>, as described by the ActivityStreams vocabulary,
+seems simple enough:
+<code>Represents a short written work typically less than a single paragraph in length.</code></p>
+<p>Here is how an ActivityStreams usage of Note might look (a bit
+simplified from what it would probably look like in practice):</p>
+<pre><code>{<span class="codekey">&quot;@context&quot;</span>: <span class="codevalue">&quot;https://www.w3.org/ns/activitystreams&quot;</span>,
+ <span class="codekey">&quot;@type&quot;</span>: <span class="codevalue">&quot;Note&quot;</span>,
+ <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;Would you read me a bedtime story about the great ontology wars?&quot;</span>}
+</code></pre>
+<p>What's that <code>@context</code> thing?
+This is some <a href="https://www.w3.org/TR/json-ld/">JSON-LD</a> thing, which
+tries to be "more exact" about what <code>Note</code> we must be talking about.
+It does so by mapping <code>Note</code> to <code>https://www.w3.org/ns/activitystreams#Note</code>
+by something like the following:</p>
+<pre><code>{<span class="codekey">&quot;as&quot;</span>: <span class="codevalue">&quot;https://www.w3.org/ns/activitystreams#&quot;</span>,
+ <span class="codekey">&quot;Note&quot;</span>: <span class="codevalue">&quot;as:Note&quot;</span>,
+ <span class="codekey">&quot;content&quot;</span>: <span class="codekey">&quot;as:content&quot;</span>,
+ ...}
+</code></pre>
+<p>The choice to use JSON-LD has been semi-controversial in ActivityPub
+land; historically there was some debate about whether or not we
+needed to be "more exact" at all as to what terms mean.
+This post really isn't about JSON-LD as much as it is the more general
+topic of vocabularies and vocabulary mapping systems.
+There are other concerns people raise about JSON-LD, usually around
+the tooling... that's not the scope of this post.
+This blogpost could as easily apply to XML or Turtle or whatever;
+the protocol I've worked on just happens to use JSON-LD to do that,
+so I've used it as my illustration.</p>
+<p>That said, the ActivityPub spec tries to make things as simple as
+possible for the default case of ActivityPub usage by saying that the
+ActivityStreams context is implied, so that if you're not doing anything
+complicated, so:</p>
+<pre><code>{<span class="codekey">&quot;@type&quot;</span>: <span class="codevalue">&quot;Note&quot;</span>,
+ <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;Would you read me a bedtime story about the great ontology wars?&quot;</span>}
+</code></pre>
+<p>... is really the same as the first example.</p>
+<p>So okay, probably everyone can guess what <code>Note</code> means, but what about
+<code>sensitive</code>?
+What the heck is that?
+It doesn't appear in the ActivityStreams vocabulary; it kind of
+implies something along the lines of content-warning type behavior, like
+"this content may be considered sensitive" by some users, but how would
+you guess that just by the term?
+This is an <em>extension</em>, and it lives at <code>http://joinmastodon.org/ns#sensitive</code>.</p>
+<p>So maybe if we were going to use it (and if we inline our context) it
+might look like:</p>
+<pre><code>{<span class="codekey">&quot;@context&quot;</span>: {<span class="codekey">&quot;as&quot;</span>: <span class="codevalue">&quot;https://www.w3.org/ns/activitystreams#&quot;</span>,
+              <span class="codekey">&quot;toot&quot;</span>: <span class="codevalue">&quot;http://joinmastodon.org/ns#&quot;</span>,
+              <span class="codekey">&quot;Note&quot;</span>: <span class="codevalue">&quot;as:Note&quot;</span>,
+              <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;as:content&quot;</span>,
+              <span class="codekey">&quot;sensitive&quot;</span>: <span class="codevalue">&quot;toot:sensitive&quot;</span>},
+ <span class="codekey">&quot;@type&quot;</span>: <span class="codevalue">&quot;Note&quot;</span>,
+ <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;Would you read me a bedtime story about the great ontology wars?&quot;</span>,
+ <span class="codekey">&quot;sensitive&quot;</span>: <span class="codevalue">true</span>}
+</code></pre>
+<p>(I mean, the Great Ontology Wars are a sensitive topic for some.)</p>
+<p>The choice of JSON-LD in ActivityPub is controversial for various
+reasons.
+But it turns out what isn't really controversial anymore is whether we
+need some way of being more exact about the way we speak about terms...
+those who used to complain about that mostly now agree (disagreements
+then surround what tooling need to be used to do so (not in scope of this
+post), and namespace governance (in scope of this post)).</p>
+<p>Maybe you feel like, having heard what <code>sensitive</code> and <code>Note</code> mean,
+these are the obvious definitions.
+But consider that <code>Note</code> itself could have meant something very
+different.
+Are we talking about a short mostly-textual post (probably on a microblog),
+as ActivityStreams does?
+Are we talking about a musical note?
+Are we instructing someone to take note of something, as an action (or
+yes, activity)?</p>
+<p>So terms really are ambiguous, and in a decentralized but extensible
+system with
+<a href="https://en.wikipedia.org/wiki/Open-world_assumption">open world assumptions</a>,
+we are eventually going to result in conflicts.
+The choice to map our vocabulary to
+<a href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier">URIs</a>
+is actually a very reasonable way to reduce ambiguity.
+Unfortunately, the choice to map them to namespaces and to <em>live</em> URIs
+(a-la <code>http(s):</code> URIs), is a mistake that will eventually bite us
+(and doubly so for JSON-LD contexts).</p>
+<h3>Problems appear</h3>
+<p>The first problem with choosing to put our terminology URIs at HTTP(S)
+URIs is that it assumes that those vocabularies will remain alive.
+Perhaps popular ones shall, but really the modern web rots all the time.
+Soon enough, many ontologies will eventually be replaced by Viagra ads.</p>
+<p>The problem is dramatically worse for json-ld contexts (and similar
+documents such as XML DTDs): these are the very documents by which we
+map terms to their fully defined meanings.
+Servers get hammered by people looking up contextual mappings.
+This is no good already.
+It gets even worse when such documents add (or otherwise amend) their
+terminology mappings; old documents may suddenly mean different things!</p>
+<p>(I'd be remiss to not note here that vocabulary namespaces and json-ld
+contexts are frequently the same URIs and yet frequently not the same
+thing.
+Still, they share a lot of the same problems and solutions in terms of
+liveness.)</p>
+<p>Furthermore, both the choice to put terms in namespaces and the choice
+to have common contextual URIs that can change creates governance
+problems.</p>
+<p>I know this from personal experience (and by that I mean many painful
+hours of my life wasted that I can never get back).
+Consider <code>sensitive</code> above.
+The Mastodon folks created their own namespace, as previously mentioned,
+but they didn't really <em>want to</em>.
+The good news was that the
+<a href="https://www.w3.org/wiki/SocialCG">Social Web Community Group</a>
+was given permission to both extend the ActivityStreams vocabulary and
+the official ActivityStreams context.</p>
+<p>Despite the entire group agreeing that it made sense to make <code>sensitive</code>
+official in some way (which does not mean everyone agreed that it was a
+good term, just that it was in enough usage that we should make it more
+easily widely available), the SocialCG got tied up for months and months
+in meetings being unable to make progress about <em>how</em> to do so:</p>
+<ul>
+<li>Should we add <code>sensitive</code> to the ActivityStreams namespace, or leave
+  it in the old namespace but "officially sanction" it?</li>
+<li>What is the migration path for software using the previous term URI?</li>
+<li>How often should we do this?  What is the governance process for
+  incubating a <em>new</em> term?  Should it happen in a separate namespace
+  first and then get "pulled in" later?</li>
+<li>What would happen if we didn't for terms like these, and the sites
+  went down?</li>
+<li>If we also update the json-ld context, what happens for documents
+  that already had <code>sensitive</code> in them meaning either the old
+  URI or a new one?  This can have significant impact on normalization
+  for signature verification.</li>
+</ul>
+<p>The group met for months about all the topics above and came to no
+conclusions.
+Eventually we decided that no consensus could be reached, so instead
+no action was taken at all.
+What a disappointment.</p>
+<p>In general, this seems to be common.
+Ironically, it leads to otherwise nice decentralized designs for
+vocabularies eventually ending up centralized in something like
+<a href="https://schema.org/">schema.org</a> anyway.</p>
+<h3>Content addressed vocabularies (and contexts) are the answer</h3>
+<p>My friend Sandro Hawke offered a solution, which I initially rejected
+as terrible, decided upon further consideration was brilliant, and
+fully embraced.
+Then Sandro explained to me that I had totally misunderstood him,
+and that he meant <a href="https://sandhawke.github.io/mov/">something different</a>.
+It turns out that I actually think my initial misunderstanding was the
+right answer.</p>
+<p>Here's what I understood Sandro to say:</p>
+<blockquote>
+<p>The name we choose for a term doesn't matter that much.
+What really matters is the paragraph or so of specification language
+that describes the term.
+If two implementations refer to the same specification text, they
+mean the same thing.
+So just use that as the description.</p>
+</blockquote>
+<p>Once I (incorrectly) came to realize that this could mean naming via
+<a href="https://en.wikipedia.org/wiki/Content-addressable_storage">content addressing</a>,
+I latched onto the idea.
+Of course!
+We had merely selected the wrong edge of
+<a href="https://en.wikipedia.org/wiki/Zooko%27s_triangle">Zooko's triangle</a>.
+But we know how to fix that sort of thing.</p>
+<p>Here's how it works.
+Let's remember the specification text for Note above:
+<code>Represents a short written work typically less than a single paragraph in length.</code>
+Let's hash that (along with a "recommendation" prefix that a user might choose
+to bind this to the term <code>Note</code>, though this is just a recommendation):</p>
+<pre><code>$ <span class="codekey">echo</span> <span class="codevalue">&quot;Note: Represents a short written work typically less than a single paragraph in length.&quot;</span> | <span class="codekey">sha256sum</span>
+3e1de3b56d2dc1bee7313963462691f9a8f46b068557b75e0e0d14c0994eddc6
+</code></pre>
+<p>So if we were defining <code>Note</code> via content-addressing, we instead would
+have defined it as
+<code>urn:sha256:3e1de3b56d2dc1bee7313963462691f9a8f46b068557b75e0e0d14c0994eddc6</code>.
+This is unambiguous enough to avoid collisions with other uses of the
+word "Note".
+But note that it doesn't require any servers staying up.
+It also doesn't have any namespace governance quagmire, because there
+is no namespace.
+Updates can be handled the usual way, via errata (translations can be
+handled similarly), and standards organizations can still publish such
+things... but it is important that the original term remain content-addressed
+and immutable.
+(Hash migration is left as an exercise for the user, with a hint that
+the solution is similar to that with errata.)</p>
+<p>Anyway, our post might end up looking in the end like this instead:</p>
+<pre><code>{<span class="codekey">&quot;@context&quot;</span>: {<span class="codekey">&quot;Note&quot;</span>: <span class="codevalue">&quot;urn:sha256:3e1de3b56d2dc1bee7313963462691f9a8f46b068557b75e0e0d14c0994eddc6&quot;</span>,
+              <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;urn:sha256:57dc44a1cdcbb7aa976a65a858b4d349ad6110d58d9d546650ce2b0e2b1048e4&quot;</span>,
+              <span class="codekey">&quot;sensitive&quot;</span>: <span class="codevalue">&quot;urn:sha256:81d98cf83fcf733400ad5d2a25495feeea47f287193a53a9722f4cb025da88f1&quot;</span>},
+ <span class="codekey">&quot;@type&quot;</span>: <span class="codevalue">&quot;Note&quot;</span>,
+ <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;Would you read me a bedtime story about the great ontology wars?&quot;</span>,
+ <span class="codekey">&quot;sensitive&quot;</span>: <span class="codevalue">true</span>}
+</code></pre>
+<p>I'll note very briefly that content-addressing is also the answer for
+JSON-LD contexts.
+If something like <a href="https://datashards.net/">Datashards</a> or
+<a href="https://ipfs.io/">IPFS</a> were used to host json-ld contexts, each post
+could link to the exact immutable content-addressed context it was
+intended to be used with.
+Servers that use such contexts can "pin" them to keep them available,
+avoiding a single point of failure (or bandwidth bottleneck).</p>
+<pre><code>{<span class="codekey">&quot;@context&quot;</span>: <span class="codevalue">&quot;idsc:p0.JLnUcJN4R1KNvSXm9Ut3Tmg7WfXAKEOx47p01Pk_Htw.2_rCdtnEha1RpD_qyzxhFIjUvLj7crIbzpmzWei5xRk&quot;</span>,
+ <span class="codekey">&quot;@type&quot;</span>: <span class="codevalue">&quot;Note&quot;</span>,
+ <span class="codekey">&quot;content&quot;</span>: <span class="codevalue">&quot;Would you read me a bedtime story about the great ontology wars?&quot;</span>,
+ <span class="codekey">&quot;sensitive&quot;</span>: <span class="codevalue">true</span>}
+</code></pre>
+<p>As one other side-note, I'll also observe that even though the fully
+expanded version of the above message is:</p>
+<pre><code>{<span class="codekey">&quot;@type&quot;</span>: <span class="codevalue">&quot;urn:sha256:3e1de3b56d2dc1bee7313963462691f9a8f46b068557b75e0e0d14c0994eddc6&quot;</span>,
+ <span class="codekey">&quot;urn:sha256:57dc44a1cdcbb7aa976a65a858b4d349ad6110d58d9d546650ce2b0e2b1048e4&quot;</span>: <span class="codevalue">&quot;Would you read me a bedtime story about the great ontology wars?&quot;</span>,
+ <span class="codekey">&quot;urn:sha256:81d98cf83fcf733400ad5d2a25495feeea47f287193a53a9722f4cb025da88f1&quot;</span>: <span class="codevalue">true</span>}
+</code></pre>
+<p>... we never needed to look at it that way because json-ld contexts
+(and systems like them) are actually
+<a href="https://github.com/cwebber/rebooting-the-web-of-trust-spring2018/blob/petnames/draft-documents/petnames.md">petname systems</a>.</p>
+<h3>Conclusions (and non-conclusions)</h3>
+<p>Let me clarify a claim I'm not making: we don't need to throw away the
+old terms for systems like ActivityStreams that are already well
+understood.
+However, going forward I do think that using content-addressing of new
+terms is a good idea.
+And in the long run, I think content-addressing of json-ld contexts
+and any documents like them is an absolute must (when they aren't
+inlined, anyway... but inlining is expensive).</p>
+<p>If we adopted Content Addressed Vocabularies, working on vocabulary
+extensions to ActivityPub could be a different story.
+Imagine a git repository that communities can fork to work on new terms.
+We could have a <code>drafts</code> directory where people hammer out common
+extension terms, and when they're ready, we simply move them to the
+<code>extensions</code> directory.
+Since the names are merely hashes of the contents of that directory,
+statically generating a webpage that lists all current known and
+recommended extensions would be trivial.
+Everything could be handled in issues and PRs, and even if terms
+aren't merged into the main repo, that's merely a matter of lower
+term discoverability rather than a hinderance of application itself.</p>
+<p>If we moved to content addressed vocabulary, we'd be more free from
+the perils of downtime and general web bitrot, freer from gatekeeping
+and governance challenges, but just as free (I'd argue even freer) to
+collaborate.
+Moving forward, I intend to ake content addressed approaches to terms
+I define in my systems, and I encourage you to do the same.</p>
+{{end}}

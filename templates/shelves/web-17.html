@@ -1,0 +1,124 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<blockquote>How much privacy can you expect on the fediverse</blockquote>
+<p>Recently, there have been some shocking revelations. Facebook, a company
+in the business of selling your data to advertisers, had some of its data
+used illegally by a third party that used it to advertise to you. As people
+hate nothing more than getting their data misused without Facebook getting a
+cut, they are now up in arms and want to leave Facebook once and for all.</p>
+<p>Media eye seems to have fallen on <code>the Mastodon network</code> as a
+solution this time. For an example, look at this Washington Post article,
+<a href="https://www.washingtonpost.com/news/the-switch/wp/2018/03/23/the-new-technology-that-aspires-to-deletefacebook-for-good">
+	The new technology that aspires to #DeleteFacebook for good</a>
+(19 trackers on the page, including Facebook), in which they tout it as a
+privacy-preserving alternative to walled-garden company-run networks.</p>
+<p>Mastodon BDFL Gargron himself wrote an article with the nice subtitle
+<a href="https://medium.com/tootsuite/deletefacebook-fafdc4090307">
+	Perspective from a platform that doesn’t put democracy in peril</a>.
+He is privacy conscious, so this page only has two trackers.</p>
+<p>(Aside: This article contains the delightful phrase &ldquo;#DeleteFacebook
+is trending on Twitter.&quot;)</p>
+<p>In all of these articles, Mastodon (and by extension, the Fediverse) are
+described as a more private and secure way of posting cat pictures and
+&ldquo;please subscribe to my patreon&rdquo; online. But is this actually true?
+Let&rsquo;s check the situation on the fediverse.</p>
+<h3 id="public-friends-unlisted-direct">Public, Friends, Unlisted, Direct</h3>
+<p>Mastodon and Pleroma support four settings for post visibility. These are
+public, friends only, unlisted and direct messages. What actually happens
+when you use those settings? The only thing they will change are the
+<code>to</code> and <code>cc</code> fields of the created activity and object.
+Your server will federate the post to other servers depending on those
+fields, and hopes the other server respects this. There is no technological
+guarantee for this, though. A malicious server could leak all the data it
+receives. This includes posts to friends and direct messages.</p>
+<p>&ldquo;Unlisted&rdquo; posts are not even in the ActivityPub standard.
+There&rsquo;s no reason to expect any non-Mastodon server to respect the
+&lsquo;unlisted&rsquo; setting, and they will most probably display those
+posts like public posts.</p>
+<p>There is no end-to-end encryption on the Fediverse. Even direct messages
+are sent unencrypted. That means that the admin of any server that your
+message travelled to can read it by looking it up in the database. With the
+recent addition of an ElasticSearch server, this has become easier, although
+it was always possible. In the end, you&rsquo;ll have to trust your admin and
+the admin of all the recipients with your data, so better keep that in mind
+when posting personal information.</p>
+<p>In the end, I&rsquo;d suggest treating these settings as recommendations
+only. They have a similar security to a meeting with your friends in a cafe.
+Someone might overhear you, but generally, only the people you want to
+address will hear what you&rsquo;re saying. If you have something truly
+private to say, don&rsquo;t do it on the fediverse or use actual end-to-end
+encryption.</p>
+<h3 id="no-ads-no-tracking-no-corporations">No ads, no tracking, no corporations</h3>
+<p>[https://pawoo.net] is the largest Mastodon instance, with over 300.000
+users. It is run by the Pixiv corporation in Japan, as a complimentary
+service to their image sharing service. It uses Google Analytics to track
+your usage of the site.</p>
+<p>While it is true that no fediverse software includes tracking by default,
+there is zero reason why it can&rsquo;t be added. You will still have to
+evaluate the tracking status of the server you are on and can&rsquo;t just
+rely on the software it uses. This is true for all fediverse servers, be they
+GNU Social, Hubzilla, PostActiv, Friendica, Mastodon or Pleroma.</p>
+<p>Some people are afraid of corporations buying other services to get the
+users&rsquo; data. There is nothing that prevents this on the fediverse.
+Someone buying pawoo.net would get access to a third of the users in the
+fediverse, with connections to probably 80% of it. I don&rsquo;t think
+it&rsquo;s likely to happen, but there&rsquo;s nothing to prevent it,
+either.</p>
+<p>So did Pawoo stray far from the standard Mastodon privacy expectations?
+When you give your data to a Mastodon instance, what are you agreeing to?
+Here are some quotes straight from the
+<a href="https://mastodon.social/terms">
+	Terms and Conditions on Mastodon.social</a>:</p>
+<p>On keeping users&rsquo; IP addresses:</p>
+<blockquote>
+<p>When registered and posting, we record the IP address that the post
+originated from. We also may retain server logs which include the IP address
+of every request to our server.</p>
+</blockquote>
+<p>Here&rsquo;s one about cookies and sharing that data with third-party
+services like Google Analytics.</p>
+<blockquote>
+<p>We use cookies to understand and save your preferences for future visits
+and compile aggregate data about site traffic and site interaction so that we
+can offer better site experiences and tools in the future. We may contract
+with third-party service providers to assist us in better understanding our
+site visitors. These service providers are not permitted to use the
+information collected on our behalf except to help us conduct and improve our
+business.</p>
+</blockquote>
+<p>And this part is my favorite:</p>
+<blockquote>
+<p>We do not sell, trade, or otherwise transfer to outside parties your
+personally identifiable information. This does not include trusted third
+parties who assist us in operating our site, conducting our business, or
+servicing you, so long as those parties agree to keep this information
+confidential. We may also release your information when we believe release is
+appropriate to comply with the law, enforce our site policies, or protect
+ours or others rights, property, or safety. However, non-personally
+identifiable visitor information may be provided to other parties for
+marketing, advertising, or other uses.</p>
+</blockquote>
+<p>Take all that as you will. I don&rsquo;t believe that mastodon.social
+actually tries to track and analyze you, but the terms allow more than many
+anti-tracking people would be comfortable with.</p>
+<h3 id="the-fediverse-is-still-better">The Fediverse is still better</h3>
+<p>After telling you all about why the privacy situation isn&rsquo;t as good
+as people make it out to be, it&rsquo;s still vastly superior to networks
+like Facebook and Twitter. Here are some reasons:</p>
+<ul>
+<li>No tracking by default</li>
+<li>No adversarial business model that requires tracking / privacy violations
+(ads)</li>
+<li>Closer connection between provider and users, better trust.</li>
+<li>Possibility to control your data in a much tighter way, by self-hosting
+or hosting with friends.</li>
+</ul>
+<p>If you find a server run by someone you trust or by yourself, you will
+have a vastly better expectation of privacy than with the ad-selling networks.
+I would trust [https://shitposter.club] and [https://niu.moe] with my data.
+Still, you should expect everything you post publically to be searchable,
+analyzable and trackable. If you need better privacy guarantees, use a
+different service with end-to-end encryption. If you want to have fun hanging
+out with new friends, get a fediverse account on Mastodon, Pleroma, GNU
+Social or any other compatible system!</p>
+{{end}}

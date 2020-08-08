@@ -1,0 +1,246 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>We are now approximately 50% of the way through the
+<a href="/blog/samsung-stack-zero-grant/">Samsung Stack Zero grant</a> for Spritely,
+and only a few months more since I
+<a href="https://dustycloud.org/blog/spritely/">announced the Spritely project</a>
+at all.
+I thought this would be a good opportunity to review what has happened
+so far and what's on the way.</p>
+<p>In my view, quite a lot has happened over the course of the last year:</p>
+<ul>
+<li>
+<p><a href="https://datashards.net/">Datashards</a> grew out of two Spritely
+   projects, <a href="https://gitlab.com/dustyweb/magenc/blob/master/magenc/scribblings/intro.org">Magenc</a>
+   and <a href="https://gitlab.com/spritely/crystal/blob/master/crystal/scribblings/intro.org">Crystal</a>.
+   This provides the "secure storage layer" for the system, and by
+   moving into Datashards has even become its own project (now mostly
+   under the maintainership of Serge Wroclawski, who as it turns out is
+   also co-host with me of <a href="https://librelounge.org/">Libre Lounge</a>.
+   There's external interest in this from the rest of the federated
+   social web, and it was a topic of discussion in
+   <a href="https://socialhub.activitypub.rocks/t/2-8-socialcg-telecon/507">the last meeting</a>
+   of the <a href="https://www.w3.org/wiki/SocialCG">SocialCG</a>.
+   While not as publicly visible recently, the project is indeed
+   active; I am currently helping advise and assist Serge with some of
+   the ongoing work on optimizations for smaller files, fixing the
+   manifest format to permit larger files, and a more robust HTTP API
+   for stores/registries.
+   (Thank you Serge also for taking on a large portion of this work
+   and responsibility!)</p>
+</li>
+<li>
+<p><a href="https://gitlab.com/spritely/goblins">Spritely Goblins</a>, the actor
+   model layer of Spritely, continues its development.
+   We are now up to release <a href="https://gitlab.com/spritely/goblins/commit/9deede936e97ae7eeaa614e05071e7bd2de446c0">v0.5</a>.
+   I don't consider the API to be stable, but it is stabilizing.
+   In particular, the object/update model, the synchronous
+   communication layer, and the transactional update support are
+   all very close to stable.
+   Asynchronous programming mostly works but has a few bugs I need
+   to work out, and the distributed programming environment design
+   is coming together enough where I expect to be able to demo it soon.</p>
+</li>
+<li>
+<p>In addition, I have finally started to
+   <a href="https://dustycloud.org/tmp/goblins-draft.html">write docs for Spritely Goblins</a>.
+   I think the tutorial above is fairly nice, and I've had a good amount
+   of review from various parties, and those who have tried it seem to think
+   it is fairly nice.
+   (Please be advised that it requires working with the
+   <a href="https://gitlab.com/spritely/goblins/-/tree/dev">dev branch of Goblins</a>
+   at the time of writing.)
+   v0.6 should the first release to have documentation after the major
+   overhaul I did last summer (effectively an entire rewrite of the system,
+   including many changes to the design after doing
+   <a href="http://www.erights.org/talks/thesis/">research into ocap practices</a>).
+   I cannot recommend that anyone else write production-level code using the
+   system yet, but I hope that by the summer things will have congealed
+   enough that this will change.</p>
+</li>
+<li>
+<p>I have made a couple of publicly visible demos of Goblins' design.
+   Weirdly enough all of these have involved ascii art.</p>
+<ul>
+<li>
+<p>The proto-version was the
+  <a href="http://dustycloud.org/blog/lets-just-be-weird-together/">Let's Just Be Weird Together</a>
+  demo.
+  Actually it's a bit strange to say this because the LJBWT demo didn't
+  use Goblins, it used a library called <a href="https://gitlab.com/dustyweb/dos-hurd">DOS/HURD</a>.
+  However, writing this library (and adapting it from <a href="https://docs.racket-lang.org/dos/win.html">DOS/Win</a>)
+  directly informed the
+  <a href="https://gitlab.com/spritely/goblinoid">rewrite of Goblins, Goblinoid</a>
+  which eventually became Goblins itself, replacing all the old code.
+  This is why I advocate demo-driven-development: the right design
+  of an architecture flows out of a demo of it.
+  (Oh yeah, and uh, it also allowed me to make a present for my 10th wedding
+  anniversary, too.)</p>
+</li>
+<li>
+<p>Continuing in a similar vein, I made the
+  <a href="https://dustycloud.org/blog/conservancy-card/">"Season's Greetings" postcard</a>,
+  which <a href="https://sfconservancy.org/">Software Freedom Conservancy</a>
+  actually used in their funding campaign this year.
+  This snowy scene used the new rewrite of Goblins and allowed me
+  to try to push the new "become" feature of Goblins to its limit
+  (the third principle of <a href="https://en.wikipedia.org/wiki/Actor_model#Fundamental_concepts">actor model semantics</a>,
+  taken very literally).
+  It wasn't really obvious to anyone else that this was using Goblins
+  in any interesting way, but I'll say that writing this really allowed
+  me to congeal many things about the update layer and it also lead to
+  uncovering a performance problem, leading to a 10x speedup.
+  Having written this demo, I was starting to get the hang of
+  things in the Goblins synchronous layer.</p>
+</li>
+<li>
+<p>Finally there was the
+  <a href="https://gitlab.com/dustyweb/terminal-phase">Terminal Phase demo</a>.
+  (See the <a href="/blog/terminal-phase-prototype/">prototype announcement blogpost</a> and
+  the <a href="/blog/terminal-phase-1.0/">1.0 announcement</a>.)
+  This was originally designed as a
+  <a href="https://www.patreon.com/posts/terminal-phase-31308473">reward for donors for hitting $500/mo</a>
+  on
+  <a href="https://www.patreon.com/cwebber">my Patreon account</a>
+  (you can still
+  <a href="https://dustycloud.org/gfx/goodies/terminal-phase-credits-2020-01-19.gif">show up in the credits</a>
+  by donating!),
+  though once 1.0 made it out the door it seems like it raised considerable
+  excitement
+  <a href="https://www.reddit.com/r/linux/comments/erh851/i_made_a_space_shooter_that_runs_in_your_terminal/">on the r/linux subreddit</a>
+  and
+  <a href="https://news.ycombinator.com/item?id=22095092">on Hacker News</a>,
+  which was nice to see.
+  Terminal Phase helped me finish testing and gaining confidence in the
+  transactional object-update and synchronous call semantics of Spritely Goblins,
+  and I now have no doubt that this layer has a good design.
+  But I think Terminal Phase was the first time that <em>other people</em> could
+  see why Spritely Goblins was exciting, especially once I showed off the
+  <a href="https://dustycloud.org/blog/goblins-time-travel-micropreview/">time travel debugging in Terminal Phase demo</a>.
+  That last post lead people to finally start pinging me asking
+  "when can I use Spritely Goblins"?
+  That's good... I'm glad it's obvious now that Goblins is doing something
+  interesting (though the most interesting things are yet to be demo'ed).</p>
+</li>
+</ul>
+</li>
+<li>
+<p>I participated in, keynoted, and drummed up enthusiasm for
+   <a href="/blog/activitypub-conf-2019/">ActivityPub Conference 2019</a>.
+   (I didn't organize though, that was
+   <a href="https://mlemmer.org">Morgan Lemmer-Webber</a>'s doing,
+   alongside <a href="https://mastodon.social/@sl007">Sebastian Lasse</a> and with
+   <a href="https://mastodon.social/@chillicampari">DeeAnn Little</a> organizing the
+   video recording.)
+   We had a great <a href="http://dustycloud.org/blog/activitypub-conf-2019-speakers/">speaker list</a>
+   and even got <a href="http://dustycloud.org/blog/mark-miller-at-apconf-2019/">Mark S. Miller to keynote</a>.
+   <a href="https://conf.tube/video-channels/apconf_channel/videos">Videos of the event</a>
+   are also available.
+   While that event was obviously much bigger than Spritely, the engagement
+   of the ActivityPub community is obviously important for its success.</p>
+</li>
+<li>
+<p>Relatedly, I continue to co-chair <a href="https://www.w3.org/wiki/SocialCG">the SocialCG</a>
+   but <a href="https://cybre.space/@nightpool">Nightpool</a> has joined as co-chair
+   which should relieve some pressure there, as I was a bit too overloaded
+   to be able to handle this all on my own.
+   The addition of the <a href="https://socialhub.activitypub.rocks/">SocialHub community forum</a>
+   has also allowed the ActivityPub community to be able to coordinate in a way
+   that does not rely on me being a blocker.
+   Again, not Spritely related directly, but the health of the
+   ActivityPub community is important to Spritely's success.</p>
+</li>
+<li>
+<p>At Rebooting Web of Trust I coordinated with a number of contributors
+   (including Mark Miller) on sketching out plans for
+   <a href="https://github.com/cwebber/rwot9-prague/blob/secure-uis/draft-documents/secure-user-interfaces.md">secure UI designs</a>.
+   Sadly the paper is incomplete but has given me the framework for
+   understanding the necessary UI components for when we get to the
+   social network layer of Spritely.</p>
+</li>
+<li>
+<p>Further along the lines of sketching out the desiderata of
+   federated social networks, I have written a nearly-complete
+   <a href="https://gitlab.com/spritely/ocappub/blob/master/README.org">OcapPub: towards networks of consent</a>.
+   However, there are still some details to be figured out; I have
+   been hammering them out on the <a href="https://groups.google.com/forum/#!forum/cap-talk">cap-talk mailing list</a>
+   (see <a href="https://groups.google.com/forum/#!topic/cap-talk/icey8aO5ABo">this post laying out a very ocappub-like design</a>
+   with some known problems, and then
+   <a href="https://groups.google.com/d/msg/cap-talk/5Q8BM3aW0Gw/lHzTgXaQAgAJ">this analysis</a>).
+   The ocap community has thankfully been very willing to participate
+   in working with me to hammer out the right security foundations,
+   and I think we're close to the right design details.
+   Of course, the proof of the pudding is in the demo, which has yet
+   to be written.</p>
+</li>
+</ul>
+<p>Okay, so I hope I've convinced you that a lot has happened, and
+hopefully you feel that I am using my time reasonably well.
+But there is much, much, much ahead for Spritely to succeed in its goals.
+So, what's next?</p>
+<ul>
+<li>
+<p>I need to finish cleaning up the Goblins documentation and do a
+   v0.6 release with it included.
+   At that point I can start recommending some brave souls to use it for
+   some simple applications.</p>
+</li>
+<li>
+<p>A demo of Spritely Goblins working in a primarily asynchronous
+   environment.
+   This might simply be a port of <a href="https://notabug.org/cwebber/mudsync/">mudsync</a>
+   as a first step.
+   (<a href="https://archive.org/details/feb_2017-live_network_coding_8sync">Recorded demo of mudsync</a>
+   from a few years ago.)
+   I'm not actually sure.
+   The goal of this isn't to be the "right" social network design (not
+   full OcapPub), just to test the async behaviors of Spritely Goblins.
+   Like the synchronous demos that have already been done, the purpose of
+   this is to congeal and ensure the quality of the async primitives.
+   I expect this and the previous bullet point to be done within the next
+   couple of months, so hopefully by the end of April.</p>
+</li>
+<li>
+<p>Distributed networked programming in Goblins, and associated demo.
+   May expand on the previous demo.
+   Probably will come out about two months later, so end of June.</p>
+</li>
+<li>
+<p>Prototype of the secure UI concepts from the forementioned secure
+   UIs paper.
+   I expect/hope this to be usable by end of third quarter 2020.</p>
+</li>
+<li>
+<p>Somewhere in-between all this, I'd like to add a demo of being able
+   to securely run untrusted code from third parties, maybe in the MUD
+   demo.
+   Not sure when yet.</p>
+</li>
+<li>
+<p>All along, I continue to expect to push out new updates to Terminal
+   Phase with more fun enemies and powerups to continue to reward donors
+   to the <a href="https://www.patreon.com/cwebber">Patreon campaign</a>.</p>
+</li>
+</ul>
+<p>This will probably take most of this year.
+What you will notice is that this does not explicitly state a tie-in
+with the ActivityPub network.
+This is intentional, because the main goal of all the above demos are to
+prove more foundational concepts before they are all fully integrated.
+I think we'll see the full integration and it coming together with the
+existing fediverse beginning in early 2021.</p>
+<p>Anyway, that's a lot of stuff ahead.
+I haven't even mentioned my involvement in
+<a href="https://librelounge.org/">Libre Lounge</a>, which I've been on hiatus
+from due to a health issue that has made recording difficult, and from
+being busy trying to deliver on these foundations, but I expect to be
+coming back to LL shortly.</p>
+<p>I hope I have instilled you with some confidence that I am moving
+steadily along the abstract Spritely roadmap.
+(Gosh, I ought to finally put together a website for Spritely, huh?)
+Things are happening, and interesting ones I think.</p>
+<p>But how do you think things are going?
+Maybe you would like to leave me feedback.
+If so, feel free to <a href="/contact/">reach out</a>.</p>
+<p>Until next time...</p>
+{{end}}

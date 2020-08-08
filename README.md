@@ -1,6 +1,7 @@
 # activitypub.dev
 
-Small static server for hosting content around the ActivityPub protocol.
+Small static server for hosting content around the ActivityPub protocol and the
+Fediverse at large.
 
 The current idea being considered is to build a library of content written by
 both technical and non-technical folks, with their permission. Hopefully an
@@ -23,5 +24,5 @@ between users and more developers.
 
 ## Code of Conduct
 
-One would definitely be needed. One thing that needs to be tackled before launch
-is how to properly run such a site.
+One would definitely be needed if more folks want to participate in running and
+operating the site.

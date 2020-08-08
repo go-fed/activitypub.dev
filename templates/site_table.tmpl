@@ -3,7 +3,7 @@
 {{template "body"}}
 {{if gt (len .CategoryFilter) 0}}
 	<div class="chipcontainer">
-		<p class="categories">Filtered by {{if eq (len .CategoryFilter) 1}}Category{{else}}Categories{{end}}:</p>
+		<p class="categories">Work must have {{if eq (len .CategoryFilter) 1}}the Category{{else}}all Categories{{end}}:</p>
 		{{range .CategoryFilter}}
 			<a class="chiplink" href="{{RequestURIWithoutQueryCategory .}}"><span class="chip {{.}}">{{.}}</span></a>
 		{{end}}
@@ -11,7 +11,7 @@
 {{end}}
 {{if gt (len .TagFilter) 0}}
 	<div class="chipcontainer">
-		<p class="tags">Filtered by {{if eq (len .TagFilter) 1}}Tag{{else}}Tags{{end}}:</p>
+		<p class="tags">Work must have {{if eq (len .TagFilter) 1}}the Tag{{else}}all Tags{{end}}:</p>
 		{{range .TagFilter}}
 			<a class="chiplink" href="{{RequestURIWithoutQueryTag .}}"><span class="chip {{.}}">{{.}}</span></a>
 		{{end}}
@@ -22,7 +22,7 @@
 		<th>Short Name</th>
 		<th>Title &amp; Category</th>
 		<th>Author</th>
-		<th>Submission Date</th>
+		<th>Publication Date</th>
 		<th>Tags</th>
 	</tr></thead>
 	<tbody>
@@ -37,7 +37,7 @@
 		{{end}}
 	</td>
 	<td><a href="{{.Author.ContactURL}}">{{.Author.DisplayName}}</a></td>
-	<td>{{.SubmissionDate}}</td>
+	<td>{{.Date}}</td>
 	<td>
 		{{range .Tags}}
 		<a class="chiplink" href="{{RequestURIWithQueryTag .}}"><span class="chip {{.}}">{{.}}</span></a>

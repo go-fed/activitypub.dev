@@ -1,0 +1,117 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<p>So
+<a href="https://www.w3.org/TR/activitypub/">
+	ActivityPub</a> is nearing
+Candidate Recommendation status.
+If you want to hear a lot more about that whole process of getting
+there, and my recent trip to TPAC, and more,
+<a href="http://mediagoblin.org/news/tpac-2016-and-review-activitypub.html">
+	I wrote a post on the MediaGoblin blog about it</a>.</p>
+<p>Last night my brother Stephen came over and he was talking about how
+he wished ActivityPub was more of a &quot;transactional&quot; system.
+I've been thinking about this myself.
+ActivityPub as it is designed is made for the social network of 2014
+more or less: trying to reproduce what the silos do, which is mutate
+a big database for specific objects, but reproduce that in a distributed
+way.
+Well, mutating distributed systems is a bit risky.
+Can we do better, without throwing out the majority of the system?
+I think it's possible, with a couple of tweaks.</p>
+<ul>
+<li><p>The summary is to move to objects and pointers to objects.
+There's no mutation, only &quot;changing&quot; pointers (and even this is done
+via appending to a log, mostly).</p>
+<p>If you're familiar with git, you could think of the objects as well,
+objects, and the pointers as branches.</p>
+<p>Except... the log isn't in the objects pointing at their previous
+revisions really, the logging is on the pointers:</p>
+<pre><code>[pointer id] =&gt; [note content id]</code></pre>
+</li>
+<li><p>There's (activitystreams) objects (which <em>may</em> be content
+addressed, to be more robust), and then &quot;pointers&quot; to those, via
+signed pointer-logs.</p>
+</li>
+<li><p>The only mutation in the system is that the &quot;pointers&quot;, which are
+signed logs (substitute &quot;logs&quot; for &quot;ledger&quot; and I guess that makes
+it a &quot;blockchain&quot; loosely), are append-only structures that say
+where the new content is.
+If something changes a lot, it can have &quot;checkpoints&quot;.
+So, you can ignore old stuff eventually.</p>
+</li>
+<li><p>Updating content means making a new object, and updating the
+pointer-log to point to it.</p>
+</li>
+<li><p>This of course leads to a problem: what identifier should objects
+use to point at each other?  The &quot;content&quot; id, or the &quot;pointer-log&quot;
+id?  One route is that when one object links to another object,
+it could link to both the pointer-log id and the object id,
+but that hardly seems desirable...</p>
+</li>
+<li><p>Maybe the best route is to have all content ids point back at their
+official log id... this isn't as crazy as it sounds!  Have a three
+step process for creating a brand new object:</p>
+<ul>
+<li>Open a new pointer-log, which is empty, and get the identifier</li>
+<li>Create the new object with all its content, and also add a link
+back to the pointer-log in the content's body</li>
+<li>Add the new object as the first item in the pointer-log</li>
+</ul>
+</li>
+<li><p>At this point, I think we can get rid of <em>all</em> side effects in
+ActivityPub!  The only mutation thing is append-only to that
+pointer-log.  As for everything else:</p>
+<ul>
+<li>Create just means &quot;This is the first time you've seen this object.&quot;
+And in fact, we could probably drop Create in a system like this,
+because we don't need it.</li>
+<li>Update is really just informing that there's a new entry on
+the pointer-log.</li>
+<li>Delete... well, you can delete your own copy.  You're mostly
+informing other servers to delete their copy, but they have
+a choice if they really will... though that's always been true!
+You now can also switch to the nice property that removing
+old content is now really garbage collection :)</li>
+</ul>
+</li>
+<li><p>Addressing and distribution still happens in the same, previous
+ways it did, I assume?  So, you still won't get access to an object
+unless you have permissions?  Though that gets more confusing if
+you use the (optional) content addressed storage here.</p>
+</li>
+<li><p>You now get a whole lot of things for free:</p>
+<ul>
+<li>You have a built in history log of everything</li>
+<li>Even if someone else's node goes down, you can keep a copy of
+all their content, and keep around the signatures to show that
+yeah, that really was the content they put there!</li>
+<li>You could theoretically distribute storage pretty nicely</li>
+<li>Updates/deletes are less dangerous</li>
+</ul>
+</li>
+</ul>
+<p>(Thanks to Steve for encouraging me to think this through more
+clearly, and lending your own thoughts, a lot of which is represented
+here!  Thanks also to Manu Sporny who was the first to get me thinking
+along these lines with some comments at TPAC.  Though, any mistakes in
+the design are mine...)</p>
+<p>Of course, you can hit even more distributed-system-nerd points by tossing
+in the possibility of encrypting everything in the system, but let's
+leave that as an exercise for the reader.
+(It's not too much extra work if you
+<a href="http://w3c.github.io/activitypub/#authorization-lds">
+	already have public keys on profiles</a>.)</p>
+<p>Anyway, is this likely to happen?
+Well, time is running out in the group, so I'm unlikely to push for it
+in this iteration.
+But the good news, as I said, is that I think it can be built on top
+without too much extra work...
+The systems might even be straight-up compatible, and eventually
+the old mutation-heavy-system could be considered the &quot;crufty&quot; way
+of doing things.</p>
+<p>Architectural astronaut'ing?  Maybe!
+Fun to think about!
+Hopefully fun to explore.
+Gotta get the 2014-made-distributed version of the social web out first
+though. :)</p>
+{{end}}

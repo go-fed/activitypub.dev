@@ -227,6 +227,31 @@ thead th:nth-child(6), head th:nth-child(7) {
 	border-color: #007cf0;
 }
 
+.hey-fyi {
+	background: #b2fff1;
+	border-color: #009b7e;
+}
+
+.c2s {
+	background: #f0b2ff;
+	border-color: #c100f2;
+}
+
+.governance {
+	background: #c9b2ff;
+	border-color: #4800f0;
+}
+
+.cooperation {
+	background: #ffb2cd;
+	border-color: #f00054;
+}
+
+.behaviors {
+	background: #e9ccc8;
+	border-color: #ab5345;
+}
+
 .Problem, .Analysis, .Experimentation, .Objection {
 	background: #ff9ed0;
 	border-color: #f1007e;
@@ -239,4 +264,8 @@ blockquote {
 
 cite:before {
 	content: "\2014\00a0";
+}
+
+h1, h2, h3, h4 {
+	font-family: 'RawlineBold', 'Lucida Grande', sans-serif;
 }

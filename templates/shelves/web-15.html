@@ -1,0 +1,116 @@
+{{define "title"}}ActivityPub Dev -- Library -- {{.ShortName}}{{end}}
+{{define "body"}}
+<blockquote>What is ActivityPub and why?</blockquote>
+<p>In my free time, I develop a free software social network server called
+<a href="https://pleroma.social">Pleroma</a>
+(<a href="https://git.pleroma.social/pleroma/pleroma">code</a>). It is
+compatible with GNU Social, Mastodon, Friendica, and any other server that
+implements the OStatus protocol. Recently, there has been some buzz about a
+new protocol for federated social networking: ActivityPub. This protocol is
+now a W3C Recommendation, which means that it&rsquo;s a kind of
+&lsquo;standard&rsquo;, if you care about that sort of thing. Here&rsquo;s my
+opinion on it, and how it came to be where it is now.</p>
+<p>Before AP, there were a few federation protocols in use already. The two
+largest ones are probably OStatus, the system that GNU Social invented, and
+the Diaspora protocol. These are actually rather similar and even partially
+interoperable. Both essentially revolve around exchanging activity data (a
+post, a like, a comment) between servers. Said simply, OStatus works well for
+Twitter style open communication, Diaspora works best for group-based
+communications (friends, acquaintances, lovers&hellip;).</p>
+<p>These protocols worked as expected, overall. Still, some parts of them
+made people look for new solutions. Especially OStatus was (and is) severely
+underdocumented. There is no document that you can read to implement a
+compatible server. Even if you read the specs of all the standards it is made
+up from, you&rsquo;ll still not know how to write a compatible server. What
+you have to do is to &ldquo;just do what GNU Social expects&rdquo;,
+essentially copying whatever it does while checking the existing documentation.
+This is an uncomfortable process, but it&rsquo;s not impossible. At least
+two completely independent implementations sprang up in the course of a year
+(Mastodon and Pleroma), in addition to the existing implementations in Gnu
+Social, Friendica and Hubzilla.</p>
+<p>After the the initial influx of users, Mastodon decided to implement
+&ldquo;private&rdquo; posts, that is, posts that only reach a certain set of
+recipients. It didn&rsquo;t implement recipient groups (like in Diaspora),
+but three settings: Public, Friends, and &ldquo;Direct Message&rdquo;, that is,
+just a few specific recipients. In addition, posts can be listed or unlisted,
+which influences whether they appear in the public timelines or not. This was
+implemented on top of OStatus by adding new fields to the activity XML.</p>
+<p>This was problematic, because every OStatus server EXCEPT Mastodon would
+not understand these new fields and simply ignore them. This led to
+accidental private data leaks and a lot of bad blood between Mastodon and GNU
+Social.</p>
+<p>Here&rsquo;s an example of what could happen.</p>
+<ol>
+<li>Alex is on Mastodon, and Bernd follows him from GNU Social. They are
+&lsquo;friends&rsquo; now. Bernd will get all of Alex&rsquo; posts. Claas
+follows Bernd from a Friendica instance.</li>
+<li>Alex posts an unlisted, friends-only post. In Mastodon semantics, this
+post will not appear on public timelines, and it can&rsquo;t be repeated /
+shared.</li>
+<li>Bernd&rsquo;s GNU Social server receives the post. It doesn&rsquo;t
+understand the Mastodon-specific fields and ignores them. Alex&rsquo; post
+appears on the public timeline.</li>
+<li>Bernd sees the post and thinks it&rsquo;s interesting. He repeats it.
+Claas now receives it on his Friendica server.</li>
+<li>Claas reads Alex&rsquo; post and writes a reply.</li>
+<li>Alex receives Claas&rsquo; reply and is surprised, even a bit shocked.
+Someone he doesn&rsquo;t know answered to a private post he made.</li>
+</ol>
+<p>This scenario happened a lot, and there was a lot of pain and drama
+because of it. In response to these problems, Mastodon started to implement
+ActivityPub and stopped federating any non-public content over OStatus. This
+solved the problem, as messages with privacy settings now never reached
+servers that didn&rsquo;t understand them. (A malicious server could still
+leak them, though). This also gave the new ActivityPub standard the largest
+user base of all federated social networking standards.</p>
+<p>Could anything have been done to prevent these problems in the first place?</p>
+<p>I think so. There&rsquo;s a really simple extension to OStatus that would
+have let to the same situation that we have now, without rewriting all our
+protocol stacks. Here&rsquo;s how:</p>
+<p>OStatus has two modes of activity transfer / federation.</p>
+<ol>
+<li>WebSub (formerly PubSubHubBub). This is used to send messages to
+followers that have send a &lsquo;follow activity&rsquo;.</li>
+<li>Salmons. These are messages sent to direct recipients, that is, when you
+mention someone. These are also signed by a public key crypto mechanism.</li>
+</ol>
+<p>So why are there two methods and not just one? OStatus is a mix of
+existing standards. Activities are available via Atom feeds (like RSS) and
+WebSub is a method of pushing out RSS feeds. The idea was that you would not
+have to write and host your WebSub server, someone else could do it for you.
+Mastodon tried this at first, using superfeedr as its WebSub server. As it
+turns out, other servers &ldquo;optimize&rdquo; the xml you push around,
+breaking federation all around. Because of this, Mastodon started including a
+WebSub server in Mastodon itself. In fact, all OStatus servers do, so the
+WebSub mechanism is kind of redundant.</p>
+<p>Now, for Salmons, every user has their own Salmon endpoint on which they
+can receive signed messages. There is a discovery mechanism (webfinger) for
+those endpoints. A simple way to restrict &lsquo;private&rsquo; activities to
+servers that support them would have been to just add a second Salmon
+endpoint for them. This would have involved a very small change to the
+webfinger and web routing code, but nothing beyond that. Servers with privacy
+extensions would have federated private messages over this additional endpoint,
+and public messages would have continued to federate over the old WebSub and
+Salmon mechanisms.</p>
+<p>So, why didn&rsquo;t Mastodon implement this system? I don&rsquo;t really
+know. It was suggested several times, but maybe group dynamics prevented it.
+Either way, we now have a new standard in ActivityPub that implements the
+same functionality that we had before, but everybody has to rewrite their
+protocol stacks from XML to JSON (and use a slightly different public key
+system).</p>
+<p>And it isn&rsquo;t enough to just read the ActivityPub spec. It
+doesn&rsquo;t specify some things that are essential to federation, including
+message signing, user discovery and even the message content (see
+<a href="http://schub.io/blog/2018/02/01/activitypub-one-protocol-to-rule-them-all.html">
+	this article</a> for more information about that).</p>
+<p>You will have to implement whatever Mastodon expects to be compatible. We
+are now back at the situation we had with GNU Social and OStatus, just that
+XML has turned into JSON and GS has become Mastodon.</p>
+<p>Where does that leave us? At least for Pleroma, it&rsquo;s not too hard.
+Pleroma has been internally an ActivityPub system from the start, so we just
+need to add the federation parts for the outside. For some other systems, it
+seems like they might sooner or later drop off the map. I don&rsquo;t really
+see anyone implementing AP for GNU Social, for example.</p>
+<p>Overall this episode has been rather frustrating, generating a lot of work
+for very little gain. But that&rsquo;s what we have to live with.</p>
+{{end}}
